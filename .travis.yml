@@ -1,0 +1,27 @@
+language: php
+
+branches:
+  only:
+    - master
+
+php:
+  - 5.4
+  - 5.5
+  - 5.6
+  - hhvm
+
+before_script:
+  - php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));"
+  - php composer.phar require
+
+script: vendor/bin/phpunit
+
+notifications:
+  email:
+    - mudi@renegare.com
+
+matrix:
+  allow_failures:
+    - php: 5.6
+    - php: hhvm
+  fast_finish: true
