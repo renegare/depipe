@@ -20,7 +20,21 @@ class BuildImageCommand extends AbstractCommand
     }
 
     protected function doExecute(InputInterface $input) {
-        $this->getEc2Client();
+        $client = $this->getEc2Client();
+        $response = $client->runInstances([
+            'ImageId' => $this->get('base-ami'),
+            'InstanceType' => $this->get('instance_type'),
+            'MinCount' => 1,
+            'MaxCount' => 1,
+            'BlockDeviceMappings' => $this->get('block_mappings')
+        ]);
+
+        $this->info('Started Instance', [
+            'response' => $response,
+            'class' => get_class($response),
+            'class_methods' => get_class_methods($response)
+        ]);
+
         $this->info('Build Complete');
     }
 
