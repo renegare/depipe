@@ -2,3 +2,4 @@ vendor/
 composer.lock
 *.phar
 .DS_Store
+coverage_report/
