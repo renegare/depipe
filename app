@@ -15,7 +15,7 @@ if(!isset($return)) {
 require_once __DIR__ . '/vendor/autoload.php';
 
 # create application
-$application = new Symfony\Component\Console\Application('DePipe', '@package_version@');
+$application = new App\Console('DePipe', '@package_version@');
 
 # build an image (launch, configure, snapshot, cleanup)
 $command = new App\Command\BuildImageCommand();

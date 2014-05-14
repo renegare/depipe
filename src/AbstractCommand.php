@@ -26,7 +26,7 @@ abstract class AbstractCommand extends Command implements LoggerAwareInterface, 
         if($this->logger) {
             $this->logger->log($level, $message, $context);
         }
-        
+
         if($this->output) {
             $this->output->writeln(sprintf('[%s] %s', $level, $message));
         }
@@ -46,6 +46,10 @@ abstract class AbstractCommand extends Command implements LoggerAwareInterface, 
 
     public function setName($name) {
         return parent::setName('pipe:' . $name);
+    }
+
+    protected function get($key) {
+        return $this->getApplication()->getConfigValue($key);
     }
 
     abstract protected function doExecute(InputInterface $input);
