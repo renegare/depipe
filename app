@@ -14,6 +14,7 @@ if(!isset($return)) {
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+
 # create application
 $application = new App\Console('DePipe', '@package_version@');
 
