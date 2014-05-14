@@ -9,6 +9,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Symfony\Component\Yaml\Parser;
 
 class Console extends Application {
 
@@ -19,13 +20,18 @@ class Console extends Application {
         $this->config = $config;
     }
 
+    public function getConfig() {
+        return $this->config;
+    }
+
     public function getConfigValue($key) {
         return $this->config[$key];
     }
 
     protected function getDefaultInputDefinition() {
         $definitions = parent::getDefaultInputDefinition();
-        $definitions->addOption(new InputOption('--log', null, InputOption::VALUE_REQUIRED, 'Log out put to this file path'));
+        $definitions->addOption(new InputOption('--log', '-l', InputOption::VALUE_REQUIRED, 'Log out put to this file path'));
+        $definitions->addOption(new InputOption('--config', '-c', InputOption::VALUE_REQUIRED, 'YAML config file path'));
         return $definitions;
     }
 
@@ -41,5 +47,16 @@ class Console extends Application {
         }
 
         parent::doRunCommand($command, $input, $output);
+    }
+
+    protected function configureIO(InputInterface $input, OutputInterface $output) {
+
+        if($input->hasParameterOption(['--config', '-c'])) {
+            $configPath = $input->getParameterOption(['--config', '-c']);
+            $yaml = new Parser();
+            $this->setConfig($yaml->parse(file_get_contents($configPath)));
+        }
+
+        return parent::configureIO($input, $output);
     }
 }

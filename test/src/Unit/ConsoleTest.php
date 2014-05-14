@@ -4,13 +4,14 @@ namespace App\Test\Command;
 
 use App\Test\Util\ConsoleTestCase;
 use Symfony\Component\Console\Tester\ApplicationTester;
+use Symfony\Component\Yaml\Dumper;
 
 class ConsoleTest extends ConsoleTestCase {
 
     /**
-     * assert logging information is stored in a depipe.log file
+     * assert --log|-l option
      */
-    public function testLogging() {
+    public function testLogOption() {
         $expectedLog = PROJECT_ROOT . '/depipe.log';
         @unlink($expectedLog);
         $app = $this->getApplication();
@@ -30,10 +31,31 @@ class ConsoleTest extends ConsoleTestCase {
         $appTester = new ApplicationTester($app);
         $appTester->run([
             'command' => $command->getName(),
-            '--log' => $expectedLog
+            '-l' => $expectedLog
         ]);
 
         $this->assertTrue(file_exists($expectedLog));
         $this->assertContains('test log!', file_get_contents($expectedLog));
+        @unlink($expectedLog);
+    }
+
+    /**
+     * assert --config|-c option
+     */
+    public function testConfigOption() {
+        @unlink('depipe.yml');
+        $dumper = new Dumper();
+        file_put_contents('depipe.yml', $dumper->dump(['base-ami' => 'ami-test']));
+
+        $app = $this->getApplication();
+        $app->setAutoExit(false);
+
+        $appTester = new ApplicationTester($app);
+        $appTester->run([
+            '--config' => 'depipe.yml'
+        ]);
+
+        $this->assertEquals(['base-ami' => 'ami-test'], $app->getConfig());
+        @unlink('depipe.yml');
     }
 }
