@@ -18,8 +18,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 $application = new Symfony\Component\Console\Application('DePipe', '@package_version@');
 
 # build an image (launch, configure, snapshot, cleanup)
-// $command = new App\Command\BuildImage();
-// $application->add($command);
+$command = new App\Command\BuildImageCommand();
+$application->add($command);
 
 // run application
 if(isset($return) && $return === true) {
