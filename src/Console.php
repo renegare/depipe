@@ -56,7 +56,7 @@ class Console extends Application {
             $yaml = new Parser();
             $this->setConfig($yaml->parse(file_get_contents($configPath)));
         }
-
+        
         return parent::configureIO($input, $output);
     }
 }

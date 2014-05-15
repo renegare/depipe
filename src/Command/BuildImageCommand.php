@@ -29,12 +29,13 @@ class BuildImageCommand extends AbstractCommand
             'BlockDeviceMappings' => $this->get('block_mappings')
         ]);
 
-        $instanceIds = $response->getPath('Instances/*/InstanceId');
-
-        $this->info(sprintf('Started Instance %s', $instanceIds[0]), [
+        $this->debug('runInstances api response', [
             'response' => $response,
             'response_class' => get_class($response)
         ]);
+
+        $instanceIds = $response->getPath('Instances/*/InstanceId');
+        $this->info(sprintf('Started Instance %s', $instanceIds[0]), ['instance_id' => $instanceIds]);
 
         $this->info('Build Complete');
     }

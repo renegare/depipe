@@ -9,6 +9,7 @@ use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command;
+use Psr\Log\LogLevel;
 
 abstract class AbstractCommand extends Command implements LoggerAwareInterface, LoggerInterface {
     use LoggerTrait, LoggerAwareTrait;
@@ -28,7 +29,30 @@ abstract class AbstractCommand extends Command implements LoggerAwareInterface, 
         }
 
         if($this->output) {
-            $this->output->writeln(sprintf('[%s] %s', $level, $message));
+            $allowedWriteLevels = [LogLevel::CRITICAL, LogLevel::ERROR];
+            $verbosity = $this->output->getVerbosity();
+
+            if($verbosity === OutputInterface::VERBOSITY_NORMAL) {
+                $allowedWriteLevels[] = LogLevel::INFO;
+            }
+
+            if($verbosity === OutputInterface::VERBOSITY_VERBOSE) {
+                $allowedWriteLevels[] = LogLevel::NOTICE;
+                $allowedWriteLevels[] = LogLevel::WARNING;
+            }
+
+            if($verbosity === OutputInterface::VERBOSITY_VERY_VERBOSE) {
+                $allowedWriteLevels[] = LogLevel::ALERT;
+                $allowedWriteLevels[] = LogLevel::EMERGENCY;
+            }
+
+            if($verbosity === OutputInterface::VERBOSITY_DEBUG) {
+                $allowedWriteLevels[] = LogLevel::DEBUG;
+            }
+
+            if(in_array($level, $allowedWriteLevels)) {
+                $this->output->writeln(sprintf('[%s] %s', $level, $message));
+            }
         }
     }
 
