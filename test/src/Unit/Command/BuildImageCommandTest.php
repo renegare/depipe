@@ -6,6 +6,7 @@ use App\Test\Util\ConsoleTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Yaml\Dumper;
 use Aws\Ec2\Enum\InstanceType;
+use Guzzle\Service\Resource\Model as GuzzleModel;
 
 class BuildImageCommandTest extends ConsoleTestCase {
 
@@ -51,7 +52,8 @@ class BuildImageCommandTest extends ConsoleTestCase {
         $this->assertEquals('aws_secret_123456', $credentials->getSecretKey());
         $this->assertEquals('us-east-1', $ec2Client->getRegion());
 
-        $mockResponse = new \stdClass; //@todo mock response
+        $mockData = json_decode('{"requestId":"1986169a-435c-4862-a023-3fc0344771f3","ReservationId":"r-c93ac3b7","OwnerId":"404046692034","Groups":[{"GroupName":"default","GroupId":"sg-d1b794b8"}],"Instances":[{"InstanceId":"i-0207a351","ImageId":"ami-8997afe0","State":{"Code":"0","Name":"pending"},"PrivateDnsName":"","PublicDnsName":"","StateTransitionReason":"","AmiLaunchIndex":"0","ProductCodes":[],"InstanceType":"t1.micro","LaunchTime":"2014-05-14T21:36:52.000Z","Placement":{"AvailabilityZone":"us-east-1d","GroupName":"","Tenancy":"default"},"KernelId":"aki-88aa75e1","Monitoring":{"State":"disabled"},"StateReason":{"Code":"pending","Message":"pending"},"Architecture":"x86_64","RootDeviceType":"ebs","RootDeviceName":"/dev/sda1","BlockDeviceMappings":[],"VirtualizationType":"paravirtual","ClientToken":"","SecurityGroups":[{"GroupName":"default","GroupId":"sg-d1b794b8"}],"Hypervisor":"xen","NetworkInterfaces":[],"EbsOptimized":false}]}', true);
+        $mockResponse = new GuzzleModel($mockData);
         $mockEc2Client = $this->getMockBuilder('Aws\Ec2\Ec2Client')
             ->disableOriginalConstructor()
             ->getMock();

@@ -29,10 +29,11 @@ class BuildImageCommand extends AbstractCommand
             'BlockDeviceMappings' => $this->get('block_mappings')
         ]);
 
-        $this->info('Started Instance', [
+        $instanceIds = $response->getPath('Instances/*/InstanceId');
+
+        $this->info(sprintf('Started Instance %s', $instanceIds[0]), [
             'response' => $response,
-            'class' => get_class($response),
-            'class_methods' => get_class_methods($response)
+            'response_class' => get_class($response)
         ]);
 
         $this->info('Build Complete');
