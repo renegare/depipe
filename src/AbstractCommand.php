@@ -16,7 +16,7 @@ abstract class AbstractCommand extends Command implements LoggerAwareInterface, 
 
     private $output;
 
-    protected function setOutput(OutputInterface $output) {
+    public function setOutput(OutputInterface $output) {
         $this->output = $output;
     }
 
@@ -32,21 +32,21 @@ abstract class AbstractCommand extends Command implements LoggerAwareInterface, 
             $allowedWriteLevels = [LogLevel::CRITICAL, LogLevel::ERROR];
             $verbosity = $this->output->getVerbosity();
 
-            if($verbosity === OutputInterface::VERBOSITY_NORMAL) {
+            if($verbosity >= OutputInterface::VERBOSITY_NORMAL) {
                 $allowedWriteLevels[] = LogLevel::INFO;
             }
 
-            if($verbosity === OutputInterface::VERBOSITY_VERBOSE) {
+            if($verbosity >= OutputInterface::VERBOSITY_VERBOSE) {
                 $allowedWriteLevels[] = LogLevel::NOTICE;
                 $allowedWriteLevels[] = LogLevel::WARNING;
             }
 
-            if($verbosity === OutputInterface::VERBOSITY_VERY_VERBOSE) {
+            if($verbosity >= OutputInterface::VERBOSITY_VERY_VERBOSE) {
                 $allowedWriteLevels[] = LogLevel::ALERT;
                 $allowedWriteLevels[] = LogLevel::EMERGENCY;
             }
 
-            if($verbosity === OutputInterface::VERBOSITY_DEBUG) {
+            if($verbosity >= OutputInterface::VERBOSITY_DEBUG) {
                 $allowedWriteLevels[] = LogLevel::DEBUG;
             }
 
