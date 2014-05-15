@@ -7,6 +7,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Aws\Ec2\Ec2Client;
+use Symfony\Component\Yaml\Dumper;
 
 class BuildImageCommand extends AbstractCommand
 {
@@ -20,13 +21,15 @@ class BuildImageCommand extends AbstractCommand
     }
 
     protected function doExecute(InputInterface $input) {
+        $yamlDumper = new Dumper();
         $client = $this->getEc2Client();
         $response = $client->runInstances([
             'ImageId' => $this->get('base-ami'),
             'InstanceType' => $this->get('instance_type'),
             'MinCount' => 1,
             'MaxCount' => 1,
-            'BlockDeviceMappings' => $this->get('block_mappings')
+            'BlockDeviceMappings' => $this->get('block_mappings'),
+            'UserData' => base64_encode("#cloud-config\n" . $yamlDumper->dump($this->get('cloud-init'), 2))
         ]);
 
         $this->debug('runInstances api response', [

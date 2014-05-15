@@ -12,13 +12,15 @@ class BuildImageCommandTest extends ConsoleTestCase {
 
     /**
      * Assert that the command builds an image with following flow
-     * - Given an ami[id]
-     * - Given a set of AWS credentials
-     * - Given a set of user data
-     * - Launch an instance with user data
-     * - Snapshot image
-     * - Terminate instance
-     * - Output pretty json of built ami[id]
+     * - Given I have an ami-[id] (that has been properly pre-configured with cloud-init)
+     * - And I have a set of AWS credentials
+     * - And I have user data config
+     * - When I launch an instance with user data config
+     * - Then I ssh into instance
+     * - And I run registered shell provisioner scripts
+     * - And I Snapshot image
+     * - And Terminate instance
+     * - And I expect to get [pretty] json containing a built ami[id]
      */
     public function testExecution() {
         $app = $this->getApplication();
@@ -30,6 +32,9 @@ class BuildImageCommandTest extends ConsoleTestCase {
             'Ebs' => [
                 'VolumeSize' => 10,
                 'DeleteOnTermination' => true]]];
+        $expectedCloudInit = [
+            'runcmd' => [
+                "echo $(date) > running.since"]];
 
         $app->setConfig([
             'base-ami' => 'ami-1234abc5',
@@ -37,11 +42,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
             'aws_secret' => 'aws_secret_123456',
             'aws_region' => 'us-east-1',
             'instance_type' => InstanceType::T1_MICRO,
-            'user_data' => [
-                'runcmd' => [
-                    ["echo $(date) > running.since"]
-                ]
-            ],
+            'cloud-init' => $expectedCloudInit,
             'block_mappings' => $expectedBlockMappings
         ]);
 
@@ -53,13 +54,12 @@ class BuildImageCommandTest extends ConsoleTestCase {
         $this->assertEquals('us-east-1', $ec2Client->getRegion());
 
         $mockResponse = $this->getMockResponse('aws/run_instances_single');
-
         $mockEc2Client = $this->getMockBuilder('Aws\Ec2\Ec2Client')
             ->disableOriginalConstructor()
             ->getMock();
         $mockEc2Client->expects($this->any())
             ->method('__call')
-            ->will($this->returnCallback(function($method, $args) use ($expectedBlockMappings, $mockResponse){
+            ->will($this->returnCallback(function($method, $args) use ($expectedBlockMappings, $mockResponse, $expectedCloudInit){
                 switch($method) {
                     case 'runInstances':
                         $this->assertEquals([
@@ -67,7 +67,11 @@ class BuildImageCommandTest extends ConsoleTestCase {
                             "ImageId" => "ami-1234abc5",
                             "MinCount" => 1,
                             "MaxCount" => 1,
-                            'BlockDeviceMappings' => $expectedBlockMappings
+                            'BlockDeviceMappings' => $expectedBlockMappings,
+                            'UserData' => base64_encode('#cloud-config
+runcmd:
+    - \'echo $(date) > running.since\'
+')
                         ], $args[0]);
                         break;
                     default:
