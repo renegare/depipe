@@ -28,3 +28,10 @@ $ composer update && vendor/bin/phpunit
 ```
 
 *NOTE:* You need composer installed on your machine
+
+Help Needed
+-----------
+
+- [ ] Shell script to build the cli tool into a phar and optionally install it somewhere in a PATH
+- [ ] Better arch idea around managing various cloud providers e.g rackspace (currently targeting aws)
+- [ ] Better arch idea around testing + deploying to a shared host (not everyone needs to launch an instance per app!)
