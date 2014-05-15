@@ -1,0 +1,56 @@
+{
+    "requestId": "9a9a9a9-9c9c-9090-a099-9090909090909",
+    "ReservationId": "r-090909",
+    "OwnerId": "909090909090",
+    "Groups": [
+        {
+            "GroupName": "default",
+            "GroupId": "sg-d909000"
+        }
+    ],
+    "Instances": [
+        {
+            "InstanceId": "i-0909090",
+            "ImageId": "ami-90909009",
+            "State": {
+                "Code": "0",
+                "Name": "pending"
+            },
+            "PrivateDnsName": "",
+            "PublicDnsName": "",
+            "StateTransitionReason": "",
+            "AmiLaunchIndex": "0",
+            "ProductCodes": [],
+            "InstanceType": "t1.micro",
+            "LaunchTime": "2014-05-14T21:36:52.000Z",
+            "Placement": {
+                "AvailabilityZone": "us-east-1d",
+                "GroupName": "",
+                "Tenancy": "default"
+            },
+            "KernelId": "aki-0909090",
+            "Monitoring": {
+                "State": "disabled"
+            },
+            "StateReason": {
+                "Code": "pending",
+                "Message": "pending"
+            },
+            "Architecture": "x86_64",
+            "RootDeviceType": "ebs",
+            "RootDeviceName": "\/dev\/sda1",
+            "BlockDeviceMappings": [],
+            "VirtualizationType": "paravirtual",
+            "ClientToken": "",
+            "SecurityGroups": [
+                {
+                    "GroupName": "default",
+                    "GroupId": "sg-0909090"
+                }
+            ],
+            "Hypervisor": "xen",
+            "NetworkInterfaces": [],
+            "EbsOptimized": false
+        }
+    ]
+}

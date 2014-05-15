@@ -52,8 +52,8 @@ class BuildImageCommandTest extends ConsoleTestCase {
         $this->assertEquals('aws_secret_123456', $credentials->getSecretKey());
         $this->assertEquals('us-east-1', $ec2Client->getRegion());
 
-        $mockData = json_decode('{"requestId":"1986169a-435c-4862-a023-3fc0344771f3","ReservationId":"r-c93ac3b7","OwnerId":"404046692034","Groups":[{"GroupName":"default","GroupId":"sg-d1b794b8"}],"Instances":[{"InstanceId":"i-0207a351","ImageId":"ami-8997afe0","State":{"Code":"0","Name":"pending"},"PrivateDnsName":"","PublicDnsName":"","StateTransitionReason":"","AmiLaunchIndex":"0","ProductCodes":[],"InstanceType":"t1.micro","LaunchTime":"2014-05-14T21:36:52.000Z","Placement":{"AvailabilityZone":"us-east-1d","GroupName":"","Tenancy":"default"},"KernelId":"aki-88aa75e1","Monitoring":{"State":"disabled"},"StateReason":{"Code":"pending","Message":"pending"},"Architecture":"x86_64","RootDeviceType":"ebs","RootDeviceName":"/dev/sda1","BlockDeviceMappings":[],"VirtualizationType":"paravirtual","ClientToken":"","SecurityGroups":[{"GroupName":"default","GroupId":"sg-d1b794b8"}],"Hypervisor":"xen","NetworkInterfaces":[],"EbsOptimized":false}]}', true);
-        $mockResponse = new GuzzleModel($mockData);
+        $mockResponse = $this->getMockResponse('aws/run_instances_single');
+
         $mockEc2Client = $this->getMockBuilder('Aws\Ec2\Ec2Client')
             ->disableOriginalConstructor()
             ->getMock();
@@ -82,5 +82,10 @@ class BuildImageCommandTest extends ConsoleTestCase {
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
         $this->assertContains('Build Complete', $commandTester->getDisplay());
+    }
+
+    public function getMockResponse($name) {
+        $json = file_get_contents(sprintf('%s/test/mock_responses/%s.json', PROJECT_ROOT, $name));
+        return new GuzzleModel(json_decode($json, true));
     }
 }
