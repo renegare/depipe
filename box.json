@@ -9,6 +9,14 @@
             "name": "*.php",
             "exclude": ["Tests", "Test"],
             "in": "vendor"
+        },
+        {
+            "name": "*.pem",
+            "in": "vendor"
+        },
+        {
+            "name": "*.pem.md5",
+            "in": "vendor"
         }
     ],
     "git-version": "package_version"
