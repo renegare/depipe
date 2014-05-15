@@ -29,11 +29,13 @@ abstract class AbstractCommand extends Command implements LoggerAwareInterface, 
         }
 
         if($this->output) {
-            $allowedWriteLevels = [LogLevel::CRITICAL, LogLevel::ERROR];
+            $allowedWriteLevels = [];
             $verbosity = $this->output->getVerbosity();
 
             if($verbosity >= OutputInterface::VERBOSITY_NORMAL) {
                 $allowedWriteLevels[] = LogLevel::INFO;
+                $allowedWriteLevels[] = LogLevel::CRITICAL;
+                $allowedWriteLevels[] = LogLevel::ERROR;
             }
 
             if($verbosity >= OutputInterface::VERBOSITY_VERBOSE) {
@@ -63,7 +65,7 @@ abstract class AbstractCommand extends Command implements LoggerAwareInterface, 
         try {
             $this->doExecute($input);
         } catch (\Exception $e) {
-            $this->error(sprintf('Command Failed: %s', (string) $e), ['exception' => $e]);
+            $this->error(sprintf('Command Failed: %s', $e->getMessage()), ['exception' => $e]);
             throw $e;
         }
     }
