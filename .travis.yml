@@ -12,9 +12,14 @@ php:
 
 before_script:
   - php -r "eval('?>'.file_get_contents('https://getcomposer.org/installer'));"
-  - php composer.phar require
+  - php composer.phar install --dev --no-interaction --prefer-dist
 
-script: vendor/bin/phpunit
+script:
+    - mkdir -p build/logs
+    - vendor/bin/phpunit --coverage-text --coverage-clover build/logs/clover.xml
+
+after_script:
+ - php vendor/bin/coveralls -v
 
 notifications:
   email:
