@@ -11,41 +11,57 @@ use Guzzle\Service\Resource\Model as GuzzleModel;
 class BuildImageCommandTest extends ConsoleTestCase {
 
     /**
-     * Assert that the command builds an image with following flow
-     * - Given I have an ami-[id] (that has been properly pre-configured with cloud-init)
-     * - And I have a set of AWS credentials
-     * - And I have user data config
-     * - When I launch an instance with user data config
-     * - Then I ssh into instance
-     * - And I run registered shell provisioner scripts
-     * - And I Snapshot image
-     * - And Terminate instance
-     * - And I expect to get [pretty] json containing a built ami[id]
+     * Assert that the command builds an image running the following tasks:
+     * - Given I have a base_image
+     * - AND I have platform credentials
+     * - AND I have userdata
+     * - AND I have provisioning shell_scripts
+     * - AND I have instance_config
+     * - AND I have image_name
+     *
+     * - RUN get_client task: [credentials] : client
+     * - RUN launch_instance task: [client, userdata_config, base_image, instance_config] : instance
+     * - RUN provision_instance task: [client, instance, shell_scripts] : void
+     * - RUN snapshot_instance task: [client, instance, image_name] : new_base_image
+     * - RUN terminate_instance: [client, instance] : void
+     * - RUN get_artifacts task: [new_base_image] : json
      */
     public function testExecution() {
         $app = $this->getApplication();
         $command = $app->find('pipe:build');
         $this->assertInstanceOf('App\Command\BuildImageCommand', $command);
 
-        $expectedBlockMappings = [[
-            'DeviceName' => '/dev/sda',
-            'Ebs' => [
-                'VolumeSize' => 10,
-                'DeleteOnTermination' => true]]];
-        $expectedCloudInit = [
-            'runcmd' => [
-                "echo $(date) > running.since"]];
+        $expectedConfig = [
+            'base_image' => 'image-1234abc5',
+            'credentials' => [
+                'aws_key' => 'depipe_key_123456',
+                'aws_secret' => 'depipe_secret_123456',
+                'vendor' => 'depipe'
+            ],
+            'userdata' => [
+                'runcmd' => [
+                    "echo $(date) > running.since"]],
+            'shell_scripts' => ['dumm_script.sh'],
+            'instance_config' =>[
+                'region' => 'north-mars-1',
+                'size' => 'insignificant'
+            ],
+            'image_name' => 'new-base-image'
+        ];
 
-        $app->setConfig([
-            'base-ami' => 'ami-1234abc5',
-            'aws_key' => 'aws_key_123456',
-            'aws_secret' => 'aws_secret_123456',
-            'aws_region' => 'us-east-1',
-            'instance_type' => InstanceType::T1_MICRO,
-            'cloud-init' => $expectedCloudInit,
-            'block_mappings' => $expectedBlockMappings
-        ]);
+        $app->setConfig($expectedConfig);
 
+        $mockClient = $this->getMock('App\Client');
+        $this->mockTask('get_client', $command,
+            ['credentials' => $expectedConfig['credentials']], $mockClient);
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(['command' => $command->getName()]);
+        $this->assertContains('Build Complete', $commandTester->getDisplay());
+
+
+
+        return;
         $ec2Client = $command->getEc2Client();
         $this->assertInstanceOf('Aws\Ec2\Ec2Client', $ec2Client);
         $credentials = $ec2Client->getCredentials();
@@ -82,10 +98,6 @@ runcmd:
                 return $mockResponse;
             }));
         $command->setEc2Client($mockEc2Client);
-
-        $commandTester = new CommandTester($command);
-        $commandTester->execute(['command' => $command->getName()]);
-        $this->assertContains('Build Complete', $commandTester->getDisplay());
     }
 
     public function getMockResponse($name) {

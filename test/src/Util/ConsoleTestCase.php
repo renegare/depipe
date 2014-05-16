@@ -40,4 +40,53 @@ abstract class ConsoleTestCase extends \PHPUnit_Framework_TestCase
 
         return $mockCommand;
     }
+
+    protected function mockTask($taskName, $taskMasterCommand, array $expectedSetters = [], $mockResponse = null) {
+        $taskMasterCommand->registerTask($taskName, $this->getMockTask($expectedSetters, $mockResponse));
+    }
+
+    protected function getMockTask(array $expectedSetters = [], $mockResponse = null) {
+        $mockTask = $this->getMockBuilder('App\Task')
+            ->setMethods(['__call', 'doRun', 'run'])
+            ->disableOriginalConstructor()
+            ->getMock()
+            ;
+
+        $mockTask->expects($this->exactly(count($expectedSetters) + 1))
+            ->method('__call')
+            ->will($this->returnCallback(function($name, $arguments) use ($expectedSetters, $mockTask) {
+                $this->assertCount(1, $arguments);
+                $value = $arguments[0];
+
+                if($name === 'setLogger') {
+                    $this->assertInstanceOf('Psr\Log\LoggerInterface', $value);
+                    return $mockTask;
+                }
+
+                $name = $this->deCamelCase(preg_replace('/^set/', '', $name));
+
+                if(isset($expectedSetters[$name])) {
+                    $expectation = $expectedSetters[$name];
+                    if($expectation instanceof \Closure) {
+                        $expectation($value);
+                    } else {
+                        $this->assertEquals($expectation, $value);
+                    }
+                    return $mockTask;
+                }
+
+                throw new \Exception(sprintf('Unexpected option set: %s', $name));
+            }));
+
+        $mockTask->expects($this->once())
+            ->method('run')
+            ->will($this->returnValue($mockResponse));
+
+        return $mockTask;
+    }
+
+    protected function deCamelCase($name) {
+        $name = preg_replace('/([A-Z])/', ' $1', $name);
+        return strtolower(str_replace(' ', '_', trim($name)));
+    }
 }
