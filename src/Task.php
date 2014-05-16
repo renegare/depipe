@@ -6,7 +6,7 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerTrait;
 
-abstract class AbstractTask implements LoggerInterface {
+abstract class Task implements LoggerInterface {
     use LoggerTrait;
 
     /** var Psr\Log\LoggerInterface */

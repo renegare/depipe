@@ -5,7 +5,7 @@ namespace App\Test;
 class AbstractTaskTest extends \PHPUnit_Framework_TestCase {
 
     public function testRun() {
-        $mockTask = $this->getMockBuilder('App\AbstractTask')
+        $mockTask = $this->getMockBuilder('App\Task')
             ->disableOriginalConstructor()
             ->setMethods(['doRun'])
             ->getMock();
@@ -22,7 +22,7 @@ class AbstractTaskTest extends \PHPUnit_Framework_TestCase {
     public function testLogError() {
         $expectedException = new \Exception('mock-error-message');
 
-        $mockTask = $this->getMockBuilder('App\AbstractTask')
+        $mockTask = $this->getMockBuilder('App\Task')
             ->disableOriginalConstructor()
             ->setMethods(['doRun'])
             ->getMock();
@@ -55,7 +55,7 @@ class AbstractTaskTest extends \PHPUnit_Framework_TestCase {
                 $this->assertEquals('Test Logger', $message);
             }));
 
-        $mockTask = $this->getMockBuilder('App\AbstractTask')
+        $mockTask = $this->getMockBuilder('App\Task')
             ->disableOriginalConstructor()
             ->setMethods(['doRun'])
             ->getMock();
@@ -82,7 +82,7 @@ class AbstractTaskTest extends \PHPUnit_Framework_TestCase {
     }
 
     protected function getAbstractTaskInstance() {
-        return $this->getMockBuilder('App\AbstractTask')
+        return $this->getMockBuilder('App\Task')
             ->disableOriginalConstructor()
             ->setMethods(['doRun'])
             ->getMock();

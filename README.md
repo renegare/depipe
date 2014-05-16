@@ -23,7 +23,7 @@ CLI Structure
 So ... still playing about with this idea ... but ... the project can be broken down to the following class types:
 
 * Command (Task Master): Symfony based Command class, that relies on classes of type Task to do the work
-* Task: The actual classes that do the work ... work here must be super concise and minimal. Working AWS is a pain and testing it all works is a pain TOO!
+* Task: The actual classes that do the work ... work here must be super concise and minimal. Working with AWS can be a pain and testing it all works is a pain!
 
 *Note*: Everything is reasonably Psr\Log aware, makes it easier to know when something has gone wrong!
 

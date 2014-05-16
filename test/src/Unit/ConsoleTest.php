@@ -19,7 +19,7 @@ class ConsoleTest extends ConsoleTestCase {
 
         $app->setAutoExit(false);
 
-        $command = $this->getMockForAbstractClass('App\AbstractCommand', ['doExecute', 'configure'], '', true);
+        $command = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
         $command->expects($this->once())
             ->method('doExecute')
             ->will($this->returnCallback(function() use ($command){

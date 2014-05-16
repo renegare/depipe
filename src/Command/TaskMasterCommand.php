@@ -2,12 +2,12 @@
 
 namespace App\Command;
 
-use App\AbstractCommand;
-use App\AbstractTask;
+use App\Task;
+use App\Command;
 
-abstract class TaskMasterCommand extends AbstractCommand
+abstract class TaskMasterCommand extends Command
 {
-    public function registerTask($name, AbstractTask $task) {
+    public function registerTask($name, Task $task) {
         $task->setLogger($this);
         $this->tasks[$name] = $task;
     }

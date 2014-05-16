@@ -2,14 +2,14 @@
 
 namespace App\Command;
 
-use App\AbstractCommand;
+use App\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Aws\Ec2\Ec2Client;
 use Symfony\Component\Yaml\Dumper;
 
-class BuildImageCommand extends AbstractCommand
+class BuildImageCommand extends Command
 {
     protected $ec2Client;
 

@@ -37,7 +37,7 @@ class Console extends Application {
 
     protected function doRunCommand(Command $command, InputInterface $input, OutputInterface $output) {
 
-        if($input->hasParameterOption(['--log', '-l']) && $command instanceof AbstractCommand) {
+        if($input->hasParameterOption(['--log', '-l']) && $command instanceof \App\Command) {
             $logPath = $input->getParameterOption(['--log', '-l']);
 
             $log = new Logger('depipe');
@@ -56,7 +56,7 @@ class Console extends Application {
             $yaml = new Parser();
             $this->setConfig($yaml->parse(file_get_contents($configPath)));
         }
-        
+
         return parent::configureIO($input, $output);
     }
 }

@@ -20,7 +20,7 @@ class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
                 $this->assertEquals(['mock' => 'context'], $context);
             }));
 
-        $command = $this->getMockForAbstractClass('App\AbstractCommand', [], '', false);
+        $command = $this->getMockForAbstractClass('App\Command', [], '', false);
         $command->setLogger($mockLogger);
         $command->info('mock-message', ['mock' => 'context']);
     }
@@ -54,7 +54,7 @@ class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
             ->method('getVerbosity')
             ->will($this->returnValue($verbosityLevel));
 
-        $command = $this->getMockForAbstractClass('App\AbstractCommand', [], '', false);
+        $command = $this->getMockForAbstractClass('App\Command', [], '', false);
         $command->setOutput($mockOutput);
 
         foreach($expectedAllowedLogLevel as $level) {
@@ -66,7 +66,7 @@ class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
      * @expectedException App\Test\Unit\AbstractCommandTestException
      */
     public function testExecute() {
-        $command = $this->getMockForAbstractClass('App\AbstractCommand', ['doExecute', 'configure'], '', true);
+        $command = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
         $command->expects($this->once())
             ->method('doExecute')
             ->will($this->returnCallback(function(){
