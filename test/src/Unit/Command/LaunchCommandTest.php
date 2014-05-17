@@ -9,7 +9,7 @@ class LaunchCommandTest extends ConsoleTestCase {
 
     /**
      * Assert that the command launches an instance running the following tasks:
-     * - Given I have a base_image
+     * - Given I have an image (base image)
      * - AND I have platform credentials
      * - AND I have userdata_config
      * - AND I have provisioning shell_scripts
@@ -17,7 +17,7 @@ class LaunchCommandTest extends ConsoleTestCase {
      * - AND I have instance_count
      *
      * - RUN get_client task: [credentials] : client
-     * - RUN launch_instances task: [client, userdata_config, base_image, instance_config, instance_count] : [instance(s)]
+     * - RUN launch_instances task: [client, userdata_config, image, instance_config, instance_count] : [instance(s)]
      * - RUN provision_instances task: [client, [instance(s)], shell_scripts] : void
      */
     public function testExecution() {
@@ -26,7 +26,7 @@ class LaunchCommandTest extends ConsoleTestCase {
         $this->assertInstanceOf('App\Command\LaunchCommand', $command);
 
         $expectedConfig = [
-            'base_image' => 'image-1234abc5',
+            'image' => 'image-1234abc5',
             'credentials' => [
                 'aws_key' => 'depipe_key_123456',
                 'aws_secret' => 'depipe_secret_123456',
@@ -52,7 +52,7 @@ class LaunchCommandTest extends ConsoleTestCase {
         $mockInstance = $this->getMock('App\Instance');
         $this->mockTask('launch_instances', $command, [
             'client' => $mockClient,
-            'base_image' => $expectedConfig['base_image'],
+            'image' => $expectedConfig['image'],
             'userdata_config' => $expectedConfig['userdata_config'],
             'instance_config' => $expectedConfig['instance_config']], [$mockInstance]);
 

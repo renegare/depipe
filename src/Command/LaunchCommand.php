@@ -21,7 +21,7 @@ class LaunchCommand extends TaskMasterCommand {
 
         $instances = $this->getTask('launch_instances')
             ->setClient($client)
-            ->setBaseImage($this->get('base_image'))
+            ->setImage($this->get('image'))
             ->setUserdataConfig($this->get('userdata_config'))
             ->setInstanceConfig($this->get('instance_config'))
             ->run();
