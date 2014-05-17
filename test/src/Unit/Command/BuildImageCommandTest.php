@@ -14,7 +14,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
      * Assert that the command builds an image running the following tasks:
      * - Given I have a base_image
      * - AND I have platform credentials
-     * - AND I have userdata
+     * - AND I have userdata_config
      * - AND I have provisioning shell_scripts
      * - AND I have instance_config
      * - AND I have image_name
@@ -22,9 +22,9 @@ class BuildImageCommandTest extends ConsoleTestCase {
      * - RUN get_client task: [credentials] : client
      * - RUN launch_instance task: [client, userdata_config, base_image, instance_config] : instance
      * - RUN provision_instance task: [client, instance, shell_scripts] : void
-     * - RUN snapshot_instance task: [client, instance, image_name] : new_base_image
+     * - RUN snapshot_instance task: [client, instance, new_image] : new_image
      * - RUN terminate_instance: [client, instance] : void
-     * - RUN get_artifacts task: [new_base_image] : json
+     * - RUN get_artifacts task: [new_image] : serializable array of data | string
      */
     public function testExecution() {
         $app = $this->getApplication();
@@ -38,7 +38,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
                 'aws_secret' => 'depipe_secret_123456',
                 'vendor' => 'depipe'
             ],
-            'userdata' => [
+            'userdata_config' => [
                 'runcmd' => [
                     "echo $(date) > running.since"]],
             'shell_scripts' => ['dumm_script.sh'],
@@ -46,7 +46,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
                 'region' => 'north-mars-1',
                 'size' => 'insignificant'
             ],
-            'image_name' => 'new-base-image'
+            'new_image' => 'new-base-image'
         ];
 
         $app->setConfig($expectedConfig);
@@ -55,49 +55,34 @@ class BuildImageCommandTest extends ConsoleTestCase {
         $this->mockTask('get_client', $command,
             ['credentials' => $expectedConfig['credentials']], $mockClient);
 
+        $mockInstance = $this->getMock('App\Instance');
+        $this->mockTask('launch_instance', $command, [
+            'client' => $mockClient,
+            'base_image' => $expectedConfig['base_image'],
+            'userdata_config' => $expectedConfig['userdata_config'],
+            'instance_config' => $expectedConfig['instance_config']], $mockInstance);
+
+        $this->mockTask('provision_instance', $command, [
+            'client' => $mockClient,
+            'instance' => $mockInstance,
+            'shell_scripts' => $expectedConfig['shell_scripts']]);
+
+        $mockNewImage = $this->getMock('App\Image');
+        $this->mockTask('snapshot_instance', $command, [
+            'client' => $mockClient,
+            'instance' => $mockInstance,
+            'new_image' => $expectedConfig['new_image']], $mockNewImage);
+
+        $this->mockTask('terminate_instance', $command, [
+            'client' => $mockClient,
+            'instance' => $mockInstance]);
+
+        $this->mockTask('get_artifacts', $command, [
+            'image' => $mockNewImage], ['image' => $mockNewImage]);
+
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
         $this->assertContains('Build Complete', $commandTester->getDisplay());
-
-
-
-        return;
-        $ec2Client = $command->getEc2Client();
-        $this->assertInstanceOf('Aws\Ec2\Ec2Client', $ec2Client);
-        $credentials = $ec2Client->getCredentials();
-        $this->assertEquals('aws_key_123456', $credentials->getAccessKeyId());
-        $this->assertEquals('aws_secret_123456', $credentials->getSecretKey());
-        $this->assertEquals('us-east-1', $ec2Client->getRegion());
-
-        $mockResponse = $this->getMockResponse('aws/run_instances_single');
-        $mockEc2Client = $this->getMockBuilder('Aws\Ec2\Ec2Client')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mockEc2Client->expects($this->any())
-            ->method('__call')
-            ->will($this->returnCallback(function($method, $args) use ($expectedBlockMappings, $mockResponse, $expectedCloudInit){
-                switch($method) {
-                    case 'runInstances':
-                        $this->assertEquals([
-                            "InstanceType" => InstanceType::T1_MICRO,
-                            "ImageId" => "ami-1234abc5",
-                            "MinCount" => 1,
-                            "MaxCount" => 1,
-                            'BlockDeviceMappings' => $expectedBlockMappings,
-                            'UserData' => base64_encode('#cloud-config
-runcmd:
-    - \'echo $(date) > running.since\'
-')
-                        ], $args[0]);
-                        break;
-                    default:
-                        throw new \Exception('Unexpected method call: ' . $method);
-                        break;
-                }
-
-                return $mockResponse;
-            }));
-        $command->setEc2Client($mockEc2Client);
     }
 
     public function getMockResponse($name) {

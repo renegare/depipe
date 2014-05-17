@@ -25,6 +25,34 @@ class BuildImageCommand extends TaskMasterCommand
             ->setCredentials($this->get('credentials'))
             ->run();
 
+        $instance = $this->getTask('launch_instance')
+            ->setClient($client)
+            ->setBaseImage($this->get('base_image'))
+            ->setUserdataConfig($this->get('userdata_config'))
+            ->setInstanceConfig($this->get('instance_config'))
+            ->run();
+
+        $this->getTask('provision_instance')
+            ->setClient($client)
+            ->setShellScripts($this->get('shell_scripts'))
+            ->setInstance($instance)
+            ->run();
+
+        $image = $this->getTask('snapshot_instance')
+            ->setClient($client)
+            ->setNewImage($this->get('new_image'))
+            ->setInstance($instance)
+            ->run();
+
+        $this->getTask('terminate_instance')
+            ->setClient($client)
+            ->setInstance($instance)
+            ->run();
+
+        $artifacts = $this->getTask('get_artifacts')
+            ->setImage($image)
+            ->run();
+
         $this->info('Build Complete');
     }
 }
