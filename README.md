@@ -56,6 +56,7 @@ Help Needed
 ### What Next (this list is never complete!)
 
 - [ ] connect:command - connect an instance to a load balancer
-- [ ] kill:command - terminate instances
+- [ ] extend 'user land' config to represent connected piping
 - [ ] find:command - find instances
+- [ ] kill:command - terminate instances
 - [ ] delete:command - delete an image
