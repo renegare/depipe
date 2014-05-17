@@ -10,6 +10,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 use Psr\Log\LogLevel;
+use Symfony\Component\Console\Input\ArrayInput;
 
 abstract class Command extends BaseCommand implements LoggerAwareInterface, LoggerInterface {
     use LoggerTrait, LoggerAwareTrait;
@@ -18,6 +19,10 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface, Logg
 
     public function setOutput(OutputInterface $output) {
         $this->output = $output;
+    }
+
+    public function getOutput() {
+        return $this->output;
     }
 
     /**
@@ -70,12 +75,27 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface, Logg
         }
     }
 
+    protected function runSubCommand($name) {
+        $name = 'pipe:' . $name;
+        $this->info('running subcommand: ' . $name);
+        $command = $this->getApplication()
+            ->find($name);
+        $input = new ArrayInput(['command' => $name]);
+        $command->run($input, $this->getOutput());
+    }
+
     public function setName($name) {
         return parent::setName('pipe:' . $name);
     }
 
-    protected function get($key) {
-        return $this->getApplication()->getConfigValue($key);
+    protected function get($key, $default = null) {
+        return $this->getApplication()
+            ->getConfigValue($key, $default);
+    }
+
+    protected function set($key, $value) {
+        return $this->getApplication()
+            ->setConfigValue($key, $value);
     }
 
     abstract protected function doExecute(InputInterface $input);

@@ -21,38 +21,22 @@ class BuildImageCommand extends TaskMasterCommand
 
     protected function doExecute(InputInterface $input) {
 
-        $client = $this->getTask('get_client')
-            ->setCredentials($this->get('credentials'))
-            ->run();
+        $client = $this->get('client');
+        $instances = $this->get('instances', function(){
+            $this->runSubCommand('launch');
+            return $this->get('instances');
+        });
 
-        $instance = $this->getTask('launch_instance')
-            ->setClient($client)
-            ->setBaseImage($this->get('base_image'))
-            ->setUserdataConfig($this->get('userdata_config'))
-            ->setInstanceConfig($this->get('instance_config'))
-            ->run();
-
-        $this->getTask('provision_instance')
-            ->setClient($client)
-            ->setShellScripts($this->get('shell_scripts'))
-            ->setInstance($instance)
-            ->run();
+        $imageName = $this->get('image_name');
 
         $image = $this->getTask('snapshot_instance')
             ->setClient($client)
-            ->setNewImage($this->get('new_image'))
-            ->setInstance($instance)
+            ->setImageName($imageName)
+            ->setInstance($instances[0])
             ->run();
 
-        $this->getTask('terminate_instance')
-            ->setClient($client)
-            ->setInstance($instance)
-            ->run();
+        $this->set('image', $image);
 
-        $artifacts = $this->getTask('get_artifacts')
-            ->setImage($image)
-            ->run();
-
-        $this->info('Build Complete');
+        $this->info(sprintf('Built image %s', $imageName));
     }
 }

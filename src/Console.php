@@ -24,8 +24,19 @@ class Console extends Application {
         return $this->config;
     }
 
-    public function getConfigValue($key) {
+    public function getConfigValue($key, $default = null) {
+        if(!isset($this->config[$key]) && $default !== null) {
+            if($default instanceof \Closure) {
+                $default = $default();
+            }
+            $this->setConfigValue($key, $default);
+        }
+
         return $this->config[$key];
+    }
+
+    public function setConfigValue($key, $value) {
+        $this->config[$key] = $value;
     }
 
     protected function getDefaultInputDefinition() {

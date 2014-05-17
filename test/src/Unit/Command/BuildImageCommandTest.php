@@ -4,89 +4,88 @@ namespace App\Test\Command;
 
 use App\Test\Util\ConsoleTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\Yaml\Dumper;
-use Aws\Ec2\Enum\InstanceType;
-use Guzzle\Service\Resource\Model as GuzzleModel;
 
 class BuildImageCommandTest extends ConsoleTestCase {
 
     /**
      * Assert that the command builds an image running the following tasks:
-     * - Given I have a base_image
-     * - AND I have platform credentials
-     * - AND I have userdata_config
-     * - AND I have provisioning shell_scripts
-     * - AND I have instance_config
-     * - AND I have image_name
+     * - Given I have [instance(s)]
+     * - AND I have a client
+     * - AND I have a image_name
      *
-     * - RUN get_client task: [credentials] : client
-     * - RUN launch_instance task: [client, userdata_config, base_image, instance_config] : instance
-     * - RUN provision_instance task: [client, instance, shell_scripts] : void
-     * - RUN snapshot_instance task: [client, instance, new_image] : new_image
-     * - RUN terminate_instance: [client, instance] : void
-     * - RUN get_artifacts task: [new_image] : serializable array of data | string
+     * - RUN snapshot_instance task: [client, instances[0], image_name] : image
+     *
+     * Note: expects instances to be an array of instance objects. Will only
+     * use the first instance. This seems odd ... but humour me ...
      */
     public function testExecution() {
         $app = $this->getApplication();
         $command = $app->find('pipe:build');
         $this->assertInstanceOf('App\Command\BuildImageCommand', $command);
 
+        $mockInstances = [$this->getMock('App\Instance')];
+        $mockClient = [$this->getMock('App\Client')];
+
         $expectedConfig = [
-            'base_image' => 'image-1234abc5',
-            'credentials' => [
-                'aws_key' => 'depipe_key_123456',
-                'aws_secret' => 'depipe_secret_123456',
-                'vendor' => 'depipe'
-            ],
-            'userdata_config' => [
-                'runcmd' => [
-                    "echo $(date) > running.since"]],
-            'shell_scripts' => ['dumm_script.sh'],
-            'instance_config' =>[
-                'region' => 'north-mars-1',
-                'size' => 'insignificant'
-            ],
-            'new_image' => 'new-base-image'
+            'instances' => $mockInstances,
+            'client' => $mockClient,
+            'image_name' => 'new-image'
         ];
 
         $app->setConfig($expectedConfig);
 
-        $mockClient = $this->getMock('App\Client');
-        $this->mockTask('get_client', $command,
-            ['credentials' => $expectedConfig['credentials']], $mockClient);
-
-        $mockInstance = $this->getMock('App\Instance');
-        $this->mockTask('launch_instance', $command, [
-            'client' => $mockClient,
-            'base_image' => $expectedConfig['base_image'],
-            'userdata_config' => $expectedConfig['userdata_config'],
-            'instance_config' => $expectedConfig['instance_config']], $mockInstance);
-
-        $this->mockTask('provision_instance', $command, [
-            'client' => $mockClient,
-            'instance' => $mockInstance,
-            'shell_scripts' => $expectedConfig['shell_scripts']]);
-
-        $mockNewImage = $this->getMock('App\Image');
+        $mockImage = $this->getMock('App\Image');
         $this->mockTask('snapshot_instance', $command, [
             'client' => $mockClient,
-            'instance' => $mockInstance,
-            'new_image' => $expectedConfig['new_image']], $mockNewImage);
-
-        $this->mockTask('terminate_instance', $command, [
-            'client' => $mockClient,
-            'instance' => $mockInstance]);
-
-        $this->mockTask('get_artifacts', $command, [
-            'image' => $mockNewImage], ['image' => $mockNewImage]);
+            'instance' => $mockInstances[0],
+            'image_name' => $expectedConfig['image_name']], $mockImage);;
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
-        $this->assertContains('Build Complete', $commandTester->getDisplay());
+
+        $builtImage = $app->getConfigValue('image');
+        $this->assertEquals($builtImage, $mockImage);
+        $this->assertContains('Built image new-image', $commandTester->getDisplay());
     }
 
-    public function getMockResponse($name) {
-        $json = file_get_contents(sprintf('%s/test/mock_responses/%s.json', PROJECT_ROOT, $name));
-        return new GuzzleModel(json_decode($json, true));
+    /**
+     * yaml configuration cannot contain intances (it is potentially an unknown and complicated object!)
+     * so realistically, build command will need to rely on a fallback.
+     * This fallback is to call the launch command which will set the 'instances' config
+     */
+    public function testInstancesPipeIn() {
+        $app = $this->getApplication();
+        $mockInstances = [$this->getMock('App\Instance')];
+        $mockClient = $this->getMock('App\Client');
+        $mockImage = $this->getMock('App\Image');
+
+        $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
+        $mockLaunchCommand->expects($this->once())
+            ->method('doExecute')
+            ->will($this->returnCallback(function() use ($app, $mockInstances){
+                $app->setConfigValue('instances', $mockInstances);
+            }));
+        $mockLaunchCommand->setName('launch');
+        $app->add($mockLaunchCommand);
+
+        $expectedConfig = [
+            'client' => $mockClient,
+            'image_name' => 'new-image'
+        ];
+        $app->setConfig($expectedConfig);
+
+        $command = $app->find('pipe:build');
+        $this->mockTask('snapshot_instance', $command, [
+            'client' => $mockClient,
+            'instance' => $mockInstances[0],
+            'image_name' => $expectedConfig['image_name']], $mockImage);;
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(['command' => $command->getName()]);
+
+        $builtImage = $app->getConfigValue('image');
+        $this->assertEquals($builtImage, $mockImage);
+        $this->assertContains('Built image new-image', $commandTester->getDisplay());
+
     }
 }

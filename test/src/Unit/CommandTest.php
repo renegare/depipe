@@ -72,7 +72,6 @@ class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
             ->will($this->returnCallback(function(){
                 throw new AbstractCommandTestException();
             }));
-
         $command->setName('test');
 
         $application = new Application();
