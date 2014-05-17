@@ -8,7 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Aws\Ec2\Ec2Client;
 use Symfony\Component\Yaml\Dumper;
 
-class BuildImageCommand extends TaskMasterCommand
+class BuildCommand extends TaskMasterCommand
 {
     protected $ec2Client;
 

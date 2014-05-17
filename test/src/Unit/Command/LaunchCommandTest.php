@@ -5,7 +5,7 @@ namespace App\Test\Command;
 use App\Test\Util\ConsoleTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class LaunchInstancesCommandTest extends ConsoleTestCase {
+class LaunchCommandTest extends ConsoleTestCase {
 
     /**
      * Assert that the command launches an instance running the following tasks:
@@ -23,7 +23,7 @@ class LaunchInstancesCommandTest extends ConsoleTestCase {
     public function testExecution() {
         $app = $this->getApplication();
         $command = $app->find('launch');
-        $this->assertInstanceOf('App\Command\LaunchInstancesCommand', $command);
+        $this->assertInstanceOf('App\Command\LaunchCommand', $command);
 
         $expectedConfig = [
             'base_image' => 'image-1234abc5',

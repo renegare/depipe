@@ -19,11 +19,11 @@ require_once __DIR__ . '/vendor/autoload.php';
 $application = new App\Console('DePipe', '@package_version@');
 
 # launch instance(s)
-$command = new App\Command\LaunchInstancesCommand();
+$command = new App\Command\LaunchCommand();
 $application->add($command);
 
 # build an image (launch, configure, snapshot, cleanup)
-$command = new App\Command\BuildImageCommand();
+$command = new App\Command\BuildCommand();
 $application->add($command);
 
 // run application
