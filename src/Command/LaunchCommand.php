@@ -4,7 +4,7 @@ namespace App\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 
-class LaunchCommand extends TaskMasterCommand {
+class LaunchCommand extends \App\TaskMasterCommand {
 
     protected function configure()
     {
@@ -15,9 +15,7 @@ class LaunchCommand extends TaskMasterCommand {
 
     protected function doExecute(InputInterface $input) {
 
-        $client = $this->getTask('get_client')
-            ->setCredentials($this->get('credentials'))
-            ->run();
+        $client = $this->get('client');
 
         $instances = $this->getTask('launch_instances')
             ->setClient($client)

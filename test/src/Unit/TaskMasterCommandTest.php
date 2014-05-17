@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Test\Unit\Command;
+namespace App\Test\Unit;
 
 class TaskMasterCommandTest extends \PHPUnit_Framework_TestCase {
 
     public function testRegisteringTasks() {
-        $mockTaskMaster = $this->getMockForAbstractClass('App\Command\TaskMasterCommand', [], '', false);
+        $mockTaskMaster = $this->getMockForAbstractClass('App\TaskMasterCommand', [], '', false);
 
         $mockTask = $this->getMockForAbstractClass('App\Task', [], '', false, true, true, ['setLogger']);
         $mockTask->expects($this->once())

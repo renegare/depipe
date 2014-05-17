@@ -24,7 +24,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
         $this->assertInstanceOf('App\Command\BuildCommand', $command);
 
         $mockInstances = [$this->getMock('App\Instance')];
-        $mockClient = [$this->getMock('App\Client')];
+        $mockClient = $this->getMock('App\Client');
 
         $expectedConfig = [
             'instances' => $mockInstances,

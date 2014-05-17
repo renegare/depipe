@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Command;
+namespace App;
 
 use App\Task;
 use App\Command;

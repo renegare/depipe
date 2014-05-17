@@ -10,7 +10,7 @@ class LaunchCommandTest extends ConsoleTestCase {
     /**
      * Assert that the command launches an instance running the following tasks:
      * - Given I have an image (base image)
-     * - AND I have platform credentials
+     * - AND I have a client
      * - AND I have userdata_config
      * - AND I have provisioning shell_scripts
      * - AND I have instance_config
@@ -24,14 +24,11 @@ class LaunchCommandTest extends ConsoleTestCase {
         $app = $this->getApplication();
         $command = $app->find('launch');
         $this->assertInstanceOf('App\Command\LaunchCommand', $command);
+        $mockClient = $this->getMock('App\Client');
 
         $expectedConfig = [
+            'client' => $mockClient,
             'image' => 'image-1234abc5',
-            'credentials' => [
-                'aws_key' => 'depipe_key_123456',
-                'aws_secret' => 'depipe_secret_123456',
-                'vendor' => 'depipe'
-            ],
             'userdata_config' => [
                 'runcmd' => [
                     "echo $(date) > running.since"]],
@@ -44,10 +41,6 @@ class LaunchCommandTest extends ConsoleTestCase {
         ];
 
         $app->setConfig($expectedConfig);
-
-        $mockClient = $this->getMock('App\Client');
-        $this->mockTask('get_client', $command,
-            ['credentials' => $expectedConfig['credentials']], $mockClient);
 
         $mockInstance = $this->getMock('App\Instance');
         $this->mockTask('launch_instances', $command, [
