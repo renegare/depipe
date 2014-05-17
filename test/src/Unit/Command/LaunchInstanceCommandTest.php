@@ -22,7 +22,7 @@ class LaunchInstancesCommandTest extends ConsoleTestCase {
      */
     public function testExecution() {
         $app = $this->getApplication();
-        $command = $app->find('pipe:launch');
+        $command = $app->find('launch');
         $this->assertInstanceOf('App\Command\LaunchInstancesCommand', $command);
 
         $expectedConfig = [

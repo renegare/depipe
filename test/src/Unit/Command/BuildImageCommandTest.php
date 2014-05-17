@@ -20,7 +20,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
      */
     public function testExecution() {
         $app = $this->getApplication();
-        $command = $app->find('pipe:build');
+        $command = $app->find('build');
         $this->assertInstanceOf('App\Command\BuildImageCommand', $command);
 
         $mockInstances = [$this->getMock('App\Instance')];
@@ -74,7 +74,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
         ];
         $app->setConfig($expectedConfig);
 
-        $command = $app->find('pipe:build');
+        $command = $app->find('build');
         $this->mockTask('snapshot_instance', $command, [
             'client' => $mockClient,
             'instance' => $mockInstances[0],

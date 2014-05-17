@@ -76,16 +76,11 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface, Logg
     }
 
     protected function runSubCommand($name) {
-        $name = 'pipe:' . $name;
         $this->info('running subcommand: ' . $name);
         $command = $this->getApplication()
             ->find($name);
         $input = new ArrayInput(['command' => $name]);
         $command->run($input, $this->getOutput());
-    }
-
-    public function setName($name) {
-        return parent::setName('pipe:' . $name);
     }
 
     protected function get($key, $default = null) {
