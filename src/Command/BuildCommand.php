@@ -16,11 +16,7 @@ class BuildCommand extends \App\TaskMasterCommand {
     protected function doExecute(InputInterface $input) {
 
         $client = $this->get('client');
-        $instances = $this->get('instances', function(){
-            $this->runSubCommand('launch');
-            return $this->get('instances');
-        });
-
+        $instances = $this->getSubCommandValue('launch', 'instances');
         $imageName = $this->get('image_name');
 
         $image = $this->getTask('snapshot_instance')

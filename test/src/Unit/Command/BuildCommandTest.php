@@ -5,7 +5,7 @@ namespace App\Test\Command;
 use App\Test\Util\ConsoleTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class BuildImageCommandTest extends ConsoleTestCase {
+class BuildCommandTest extends ConsoleTestCase {
 
     /**
      * Assert that the command builds an image running the following tasks:
@@ -38,7 +38,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
         $this->mockTask('snapshot_instance', $command, [
             'client' => $mockClient,
             'instance' => $mockInstances[0],
-            'image_name' => $expectedConfig['image_name']], $mockImage);;
+            'image_name' => $expectedConfig['image_name']], $mockImage);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
@@ -78,7 +78,7 @@ class BuildImageCommandTest extends ConsoleTestCase {
         $this->mockTask('snapshot_instance', $command, [
             'client' => $mockClient,
             'instance' => $mockInstances[0],
-            'image_name' => $expectedConfig['image_name']], $mockImage);;
+            'image_name' => $expectedConfig['image_name']], $mockImage);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
