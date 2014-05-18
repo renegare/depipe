@@ -52,11 +52,23 @@ Help Needed
 - [ ] Better arch idea around managing various cloud providers e.g rackspace (currently targeting aws)
 - [ ] Better arch idea around testing + deploying to a shared host (not everyone needs to launch an instance per app!)
 
-
+----------------------
 ### What Next (this list is never complete!)
 
 - [x] connect:command - connect an instance to a load balancer
-- [ ] extend 'user land' config to represent connected piping
-- [ ] find:command - find instances
-- [ ] kill:command - terminate instances
-- [ ] delete:command - delete an image
+- [ ] 'user land' config to represent connected piping
+- - [ ] parameters: root config values that all pipes inherit their initial configuration from
+- -  - [ ] need to allow config values to be retrieved from the environment e.g credential secrets
+- - [ ] pipelines: connected pipes
+- - - [ ] Pipe names: [command] > [free text description]:
+- - - - [ ] Name-spaced commands: [name-spaced]\([command]) > [free text description]:
+- - - [ ] Special keywords @*:
+- - - - [ ] from: pipes can choose to inherit parameters from any other pipe in their ancestory (default is the immediate parent|root paremeters)
+- - - - [ ] wait: pipes can halt their process until another pipe from another pipeline has completed (need some kind of event system!)
+- [ ] implement commands
+- - [ ] find:command - find instances
+- - [ ] kill:command - terminate instances
+- - [ ] delete:command - delete an image
+- [ ] implement: tasks
+- [ ] actually use the damn thing!
+- [ ] tag v0.1.0

@@ -43,19 +43,19 @@ class ConsoleTest extends ConsoleTestCase {
      * assert --config|-c option
      */
     public function testConfigOption() {
-        @unlink('depipe.yml');
+        @unlink('depipe-mock.yml');
         $dumper = new Dumper();
-        file_put_contents('depipe.yml', $dumper->dump(['base-ami' => 'ami-test']));
+        file_put_contents('depipe-mock.yml', $dumper->dump(['base-ami' => 'ami-test']));
 
         $app = $this->getApplication();
         $app->setAutoExit(false);
 
         $appTester = new ApplicationTester($app);
         $appTester->run([
-            '--config' => 'depipe.yml'
+            '--config' => 'depipe-mock.yml'
         ]);
 
         $this->assertEquals(['base-ami' => 'ami-test'], $app->getConfig());
-        @unlink('depipe.yml');
+        @unlink('depipe-mock.yml');
     }
 }
