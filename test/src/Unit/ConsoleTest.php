@@ -64,7 +64,7 @@ class ConsoleTest extends ConsoleTestCase {
     /**
      * test we can retrieve parans from the evironment
      */
-    public function testParamsFromEnv() {
+    public function testParamsFromEnvPlaceholder() {
         @unlink('depipe-mock.yml');
         $time = time();
         putenv(sprintf('DEPIPE_TEST_ENV=%s', $time));
@@ -88,5 +88,29 @@ class ConsoleTest extends ConsoleTestCase {
             'literal' => $time], $app->getConfig());
         @unlink('depipe-mock.yml');
         putenv('DEPIPE_TEST_ENV');
+    }
+
+    /**
+     * @expectedException BadFunctionCallException
+     */
+    public function testInvalidPlaceholder() {
+        @unlink('depipe-mock.yml');
+
+        $dumper = new Dumper();
+        file_put_contents('depipe-mock.yml', $dumper->dump([
+            'parameters' =>[
+                'key' => '{{invalid ... }}']]));
+
+        $app = $this->getApplication();
+        $app->setAutoExit(false);
+
+        $appTester = new ApplicationTester($app);
+        $appTester->run([
+            '--config' => 'depipe-mock.yml'
+        ]);
+    }
+
+    public function teardown() {
+        @unlink('depipe-mock.yml');
     }
 }
