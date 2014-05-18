@@ -5,3 +5,4 @@ composer.lock
 coverage_report/
 *.log
 *.tmp
+depipe.yml
