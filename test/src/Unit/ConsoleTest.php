@@ -45,7 +45,9 @@ class ConsoleTest extends ConsoleTestCase {
     public function testConfigOption() {
         @unlink('depipe-mock.yml');
         $dumper = new Dumper();
-        file_put_contents('depipe-mock.yml', $dumper->dump(['base-ami' => 'ami-test']));
+        file_put_contents('depipe-mock.yml', $dumper->dump([
+            'parameters' =>[
+                'base-ami' => 'ami-test']]));
 
         $app = $this->getApplication();
         $app->setAutoExit(false);
@@ -57,5 +59,34 @@ class ConsoleTest extends ConsoleTestCase {
 
         $this->assertEquals(['base-ami' => 'ami-test'], $app->getConfig());
         @unlink('depipe-mock.yml');
+    }
+
+    /**
+     * test we can retrieve parans from the evironment
+     */
+    public function testParamsFromEnv() {
+        @unlink('depipe-mock.yml');
+        $time = time();
+        putenv(sprintf('DEPIPE_TEST_ENV=%s', $time));
+
+        $dumper = new Dumper();
+        file_put_contents('depipe-mock.yml', $dumper->dump([
+            'parameters' =>[
+                'string' => 'secret-{{env DEPIPE_TEST_ENV }}',
+                'literal' => '{{env DEPIPE_TEST_ENV }}']]));
+
+        $app = $this->getApplication();
+        $app->setAutoExit(false);
+
+        $appTester = new ApplicationTester($app);
+        $appTester->run([
+            '--config' => 'depipe-mock.yml'
+        ]);
+
+        $this->assertEquals([
+            'string' => 'secret-' . $time,
+            'literal' => $time], $app->getConfig());
+        @unlink('depipe-mock.yml');
+        putenv('DEPIPE_TEST_ENV');
     }
 }

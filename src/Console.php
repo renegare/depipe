@@ -65,9 +65,26 @@ class Console extends Application {
         if($input->hasParameterOption(['--config', '-c'])) {
             $configPath = $input->getParameterOption(['--config', '-c']);
             $yaml = new Parser();
-            $this->setConfig($yaml->parse(file_get_contents($configPath)));
+            $config = $this->processPlaceHolders(file_get_contents($configPath));
+            $config = $yaml->parse($config);
+            $params = isset($config['parameters'])? $config['parameters'] : [];
+            $this->setConfig($params);
         }
 
         return parent::configureIO($input, $output);
+    }
+
+    protected function processPlaceHolders($config) {
+        return preg_replace_callback('/{{\s*(\w+)\s+([^}]+)}}/', function($matches) {
+            $source = $matches[1];
+            $arg = trim($matches[2]);
+
+            switch($source) {
+                case 'env':
+                    return getenv($arg);
+                default:
+                    throw new \BadFunctionCallException('Invalid place holder ' . $source);
+            }
+        }, $config);
     }
 }
