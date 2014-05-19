@@ -18,7 +18,7 @@ class PipelineCommand extends \App\Command{
         $app = $this->getApplication();
         $pipes = $app->getPipeLine();
         foreach($pipes as $command => $config) {
-            preg_match('/^(\w+)(.*)/', $command, $match);
+            preg_match('/^([\w:]+)(.*)/', $command, $match);
             list($match, $commandName, $description) = $match;
 
             $this->info(sprintf('Running pipe \'%s\' (%s command) ...', $description, $commandName));

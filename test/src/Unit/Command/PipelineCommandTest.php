@@ -19,6 +19,9 @@ class PipelineCommandTest extends ConsoleTestCase {
         $this->assertInstanceOf('App\Command\PipelineCommand', $command);
 
         $pipelineConfig = [
+            'find:image web app' => [
+                'launch_config' => 'launch_value'
+            ],
             'launch vanilla instance' => [
                 'launch_config' => 'launch_value'
             ],
@@ -41,6 +44,7 @@ class PipelineCommandTest extends ConsoleTestCase {
 
         $this->assertEquals($expectedFinalConfig, $app->getConfig());
         $this->assertEquals([
+            'find:image',
             'launch',
             'build',
             'connect'
@@ -53,7 +57,7 @@ class PipelineCommandTest extends ConsoleTestCase {
         $executionOrder = new \stdClass;
         $executionOrder->order = [];
         foreach($pipelineConfig as $command => $config) {
-            preg_match('/^(\w+)(.*)/', $command, $match);
+            preg_match('/^([\w:]+)(.*)/', $command, $match);
             list($match, $commandName, $description) = $match;
             $expectedFinalConfig = array_merge($expectedFinalConfig, $config);
 
@@ -66,7 +70,7 @@ class PipelineCommandTest extends ConsoleTestCase {
                 ->method('doExecute')
                 ->will($this->returnCallback(function() use ($mockCommand, $artifactKey, $artifactValue, $commandName, &$executionOrder){
                     $mockCommand->set($artifactKey, $artifactValue);
-                    $executionOrder->order[] = $commandName;
+                    $executionOrder->order[] = $mockCommand->getName();
                 }));
             $app->add($mockCommand);
         }
