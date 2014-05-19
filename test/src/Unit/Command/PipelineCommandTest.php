@@ -31,7 +31,7 @@ class PipelineCommandTest extends ConsoleTestCase {
         ];
         $app->setPipeline($pipelineConfig);
 
-        $expectedFinalConfig = $this->mockPipeCommands($pipelineConfig, $app, [
+        list($executionOrder, $expectedFinalConfig) = $this->mockPipeCommands($pipelineConfig, $app, [
             'user_config' => 'yeah from the begining'
         ]);
 
@@ -40,28 +40,36 @@ class PipelineCommandTest extends ConsoleTestCase {
         $this->assertContains('Pipeline completed', $commandTester->getDisplay());
 
         $this->assertEquals($expectedFinalConfig, $app->getConfig());
+        $this->assertEquals([
+            'launch',
+            'build',
+            'connect'
+        ], $executionOrder->order);
     }
 
     public function mockPipeCommands(array $pipelineConfig, Application $app, array $expectedFinalConfig = []) {
 
         $app->setConfig($expectedFinalConfig);
+        $executionOrder = new \stdClass;
+        $executionOrder->order = [];
         foreach($pipelineConfig as $command => $config) {
             preg_match('/^(\w+)(.*)/', $command, $match);
             list($match, $commandName, $description) = $match;
             $expectedFinalConfig = array_merge($expectedFinalConfig, $config);
-            $mockCommand = $this->mockCommand($app, $commandName);
 
             $artifactKey = $commandName . '_artifact';
             $artifactValue = $commandName . '_artifact_value';
             $expectedFinalConfig[$artifactKey] = $artifactValue;
 
+            $mockCommand = $this->mockCommand($app, $commandName);
             $mockCommand->expects($this->once())
                 ->method('doExecute')
-                ->will($this->returnCallback(function() use ($mockCommand, $artifactKey, $artifactValue){
+                ->will($this->returnCallback(function() use ($mockCommand, $artifactKey, $artifactValue, $commandName, &$executionOrder){
                     $mockCommand->set($artifactKey, $artifactValue);
+                    $executionOrder->order[] = $commandName;
                 }));
             $app->add($mockCommand);
         }
-        return $expectedFinalConfig;
+        return [$executionOrder, $expectedFinalConfig];
     }
 }
