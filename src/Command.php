@@ -83,12 +83,12 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface, Logg
         $command->run($input, $this->getOutput());
     }
 
-    protected function get($key, $default = null) {
+    public function get($key, $default = null) {
         return $this->getApplication()
             ->getConfigValue($key, $default);
     }
 
-    protected function set($key, $value) {
+    public function set($key, $value) {
         return $this->getApplication()
             ->setConfigValue($key, $value);
     }

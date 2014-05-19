@@ -57,9 +57,10 @@ Help Needed
 
 - [x] connect:command - connect an instance to a load balancer
 - [ ] 'user land' config to represent connected piping
-- - [ ] parameters: root config values that all pipes inherit their initial configuration from
+- - [x] parameters: root config values that all pipes inherit their initial configuration from
 - -  - [x] need to allow config values to be retrieved from the environment e.g credential secrets
 - - [ ] pipelines: connected pipes
+- - - [ ] pipelines run in parallel to each other
 - - - [ ] Pipe names: [command] > [free text description]:
 - - - - [ ] Name-spaced commands: [name-spaced]\([command]) > [free text description]:
 - - - [ ] Special keywords @*:

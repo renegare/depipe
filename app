@@ -23,6 +23,7 @@ $application = new App\Console('DePipe', '@package_version@');
 $application->add(new App\Command\LaunchCommand());
 $application->add(new App\Command\BuildCommand());
 $application->add(new App\Command\ConnectCommand());
+$application->add(new App\Command\PipelineCommand());
 
 // run application
 if(isset($return) && $return === true) {
