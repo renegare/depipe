@@ -7,8 +7,9 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Console\Output\OutputInterface;
 use Psr\Log\LogLevel;
+use App\Test\Util\ConsoleTestCase;
 
-class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
+class AbstractCommandTest extends ConsoleTestCase {
 
     public function testLogger() {
         $mockLogger = $this->getMockForAbstractClass('Psr\Log\LoggerInterface');
@@ -20,7 +21,7 @@ class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
                 $this->assertEquals(['mock' => 'context'], $context);
             }));
 
-        $command = $this->getMockForAbstractClass('App\Command', [], '', false);
+        $command = $this->getMockCommand();
         $command->setLogger($mockLogger);
         $command->info('mock-message', ['mock' => 'context']);
     }
@@ -54,7 +55,7 @@ class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
             ->method('getVerbosity')
             ->will($this->returnValue($verbosityLevel));
 
-        $command = $this->getMockForAbstractClass('App\Command', [], '', false);
+        $command = $this->getMockCommand();
         $command->setOutput($mockOutput);
 
         foreach($expectedAllowedLogLevel as $level) {
@@ -66,7 +67,7 @@ class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
      * @expectedException App\Test\Unit\AbstractCommandTestException
      */
     public function testExecute() {
-        $command = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
+        $command = $this->getMockCommand();
         $command->expects($this->once())
             ->method('doExecute')
             ->will($this->returnCallback(function(){
@@ -79,6 +80,10 @@ class AbstractCommandTest extends \PHPUnit_Framework_TestCase {
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(array('command' => $command->getName()));
+    }
+
+    public function testGetClient() {
+
     }
 }
 

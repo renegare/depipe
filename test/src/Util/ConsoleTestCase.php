@@ -78,4 +78,8 @@ abstract class ConsoleTestCase extends \PHPUnit_Framework_TestCase
         $name = preg_replace('/([A-Z])/', ' $1', $name);
         return strtolower(str_replace(' ', '_', trim($name)));
     }
+
+    protected function getMockCommand($name = 'test') {
+        return $this->getMockForAbstractClass('App\Command', [$name]);
+    }
 }
