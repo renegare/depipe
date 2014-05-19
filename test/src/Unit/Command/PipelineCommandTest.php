@@ -91,6 +91,7 @@ class PipelineCommandTest extends ConsoleTestCase {
         $this->assertArrayNotHasKey('@from', $finalConfig);
         $this->assertArrayHasKey('instance_count', $finalConfig);
         $this->assertEquals(2, $finalConfig['instance_count']);
+        $expectedFinalConfig['instance_count'] = 2;
         $this->assertEquals($expectedFinalConfig, $finalConfig);
         $this->assertEquals([
             'launch',
