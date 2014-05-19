@@ -56,9 +56,6 @@ Help Needed
 ### Road Map to v0.1.0 (useful-release)
 
 #### Configuration (depipe.yml.dist)
-- [ ] pipeline: single pipe line config
-> - Allow special @from param in pipe config (pipe can choose to inherit config from a grand-pipe in-oppose to the immediate parent)
-
 - [ ] pipelines: multi pipe line config
 > - Run pipelines in isolated processes (however they all start from the root config)
 > - Allow special @wait param in pipe config (wait for an event in a parallel pipeline)
