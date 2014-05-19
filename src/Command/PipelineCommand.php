@@ -21,6 +21,7 @@ class PipelineCommand extends \App\Command{
             preg_match('/^([\w:]+)(.*)/', $command, $match);
             list($match, $commandName, $description) = $match;
 
+            $config = $this->processConfig($config);
             $this->info(sprintf('Running pipe \'%s\' (%s command) ...', $description, $commandName));
 
             $app->appendConfig($config);
@@ -28,5 +29,20 @@ class PipelineCommand extends \App\Command{
         }
 
         $this->info('Pipeline completed', ['config' => $config]);
+    }
+
+    protected function processConfig(array $config) {
+        foreach($config as $key => $value) {
+            if(preg_match('/^@/', $key)) {
+                switch($key) {
+                    case '@from':
+                        break;
+
+                }
+
+                unset($config[$key]);
+            }
+        }
+        return $config;
     }
 }

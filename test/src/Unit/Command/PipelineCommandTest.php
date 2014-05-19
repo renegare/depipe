@@ -20,7 +20,8 @@ class PipelineCommandTest extends ConsoleTestCase {
 
         $pipelineConfig = [
             'find:image web app' => [
-                'launch_config' => 'launch_value'
+                'find:image_config' => 'find:image_value',
+                'launch_config' => 'will_be_overriden'
             ],
             'launch vanilla instance' => [
                 'launch_config' => 'launch_value'
@@ -30,7 +31,51 @@ class PipelineCommandTest extends ConsoleTestCase {
             ],
             'connect to elb' => [
                 'connect_config' => 'connect_value'
+            ]
+        ];
+
+        $app->setPipeline($pipelineConfig);
+
+        list($executionOrder, $expectedFinalConfig) = $this->mockPipeCommands($pipelineConfig, $app, [
+            'user_config' => 'yeah from the begining'
+        ]);
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(['command' => $command->getName()]);
+        $this->assertContains('Pipeline completed', $commandTester->getDisplay());
+
+        $finalConfig = $app->getConfig();
+        $this->assertEquals($expectedFinalConfig, $finalConfig);
+        $this->assertEquals('launch_value', $expectedFinalConfig['launch_config']);
+        $this->assertEquals([
+            'find:image',
+            'launch',
+            'build',
+            'connect'
+        ], $executionOrder->order);
+    }
+
+    /**
+     * Assert pipe special config @from will get use config from gran-pipe (not immediate parent)
+     */
+    public function testSpecialFromParam() {
+        $app = $this->getApplication();
+        $command = $app->find('pipeline');
+        $this->assertInstanceOf('App\Command\PipelineCommand', $command);
+
+        $pipelineConfig = [
+            'launch web app instance' => [
+                'launch_config' => 'launch_value',
+                'instance_count' => 2
             ],
+            'launch db instance' => [
+                'launch_config' => 'launch_value',
+                'instance_count' => 1
+            ],
+            'connect web apps to elb' => [
+                '@from' => 'launch web app instance',
+                'connect_config' => 'connect_value'
+            ]
         ];
         $app->setPipeline($pipelineConfig);
 
@@ -42,11 +87,14 @@ class PipelineCommandTest extends ConsoleTestCase {
         $commandTester->execute(['command' => $command->getName()]);
         $this->assertContains('Pipeline completed', $commandTester->getDisplay());
 
-        $this->assertEquals($expectedFinalConfig, $app->getConfig());
+        $finalConfig = $app->getConfig();
+        $this->assertArrayNotHasKey('@from', $finalConfig);
+        $this->assertArrayHasKey('instance_count', $finalConfig);
+        $this->assertEquals(2, $finalConfig['instance_count']);
+        $this->assertEquals($expectedFinalConfig, $finalConfig);
         $this->assertEquals([
-            'find:image',
             'launch',
-            'build',
+            'launch',
             'connect'
         ], $executionOrder->order);
     }
@@ -56,24 +104,51 @@ class PipelineCommandTest extends ConsoleTestCase {
         $app->setConfig($expectedFinalConfig);
         $executionOrder = new \stdClass;
         $executionOrder->order = [];
+        $mockedCommands = [];
         foreach($pipelineConfig as $command => $config) {
             preg_match('/^([\w:]+)(.*)/', $command, $match);
             list($match, $commandName, $description) = $match;
-            $expectedFinalConfig = array_merge($expectedFinalConfig, $config);
+            $expectedFinalConfig = array_merge($expectedFinalConfig, $this->stripOutSpecialParams($config));
 
             $artifactKey = $commandName . '_artifact';
             $artifactValue = $commandName . '_artifact_value';
             $expectedFinalConfig[$artifactKey] = $artifactValue;
 
-            $mockCommand = $this->mockCommand($app, $commandName);
-            $mockCommand->expects($this->once())
-                ->method('doExecute')
-                ->will($this->returnCallback(function() use ($mockCommand, $artifactKey, $artifactValue, $commandName, &$executionOrder){
+            if(!isset($mockedCommands[$commandName])) {
+                $mockedCommands[$commandName] = [$this->mockCommand($app, $commandName), []];
+            }
+
+            $mockCommand = $mockedCommands[$commandName][0];
+            $mockedCommands[$commandName][1][] = function() use ($mockCommand, $artifactKey, $artifactValue, $commandName, &$executionOrder){
                     $mockCommand->set($artifactKey, $artifactValue);
                     $executionOrder->order[] = $mockCommand->getName();
+            };
+        }
+
+        // lets aggregate all the calls to doExecute for each command
+        foreach($mockedCommands as $mock) {
+            list($mockCommand, $doExecuteCallbacks) = $mock;
+
+            $mockCommand->expects($this->exactly(count($doExecuteCallbacks)))
+                ->method('doExecute')
+                ->will($this->returnCallback(function() use ($mockCommand, &$mockedCommands){
+                    $callback = array_shift($mockedCommands[$mockCommand->getName()][1]);
+                    $callback();
                 }));
             $app->add($mockCommand);
         }
+
         return [$executionOrder, $expectedFinalConfig];
+    }
+
+    // public function mockCommandAggregated()
+
+    public function stripOutSpecialParams($config) {
+        foreach($config as $key => $value) {
+            if(preg_match('/^@/', $key)) {
+                unset($config[$key]);
+            }
+        }
+        return $config;
     }
 }
