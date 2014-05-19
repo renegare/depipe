@@ -53,23 +53,24 @@ Help Needed
 - [ ] Better arch idea around testing + deploying to a shared host (not everyone needs to launch an instance per app!)
 
 ----------------------
-### What Next (this list is never complete!)
+### Road Map to v0.1.0 (useful-release)
 
-- [x] connect:command - connect an instance to a load balancer
-- [ ] 'user land' config to represent connected piping
-- - [x] parameters: root config values that all pipes inherit their initial configuration from
-- -  - [x] need to allow config values to be retrieved from the environment e.g credential secrets
-- - [ ] pipelines: connected pipes
-- - - [ ] pipelines run in parallel to each other
-- - - [ ] Pipe names: [command] > [free text description]:
-- - - - [ ] Name-spaced commands: [name-spaced]\([command]) > [free text description]:
-- - - [ ] Special keywords @*:
-- - - - [ ] from: pipes can choose to inherit parameters from any other pipe in their ancestory (default is the immediate parent|root paremeters)
-- - - - [ ] wait: pipes can halt their process until another pipe from another pipeline has completed (need some kind of event system!)
-- [ ] implement commands
-- - [ ] find:command - find instances
-- - [ ] kill:command - terminate instances
-- - [ ] delete:command - delete an image
-- [ ] implement: tasks
-- [ ] actually use the damn thing!
+#### Configuration (depipe.yml.dist)
+- [ ] pipeline: single pipe line config
+> - Allow special @from param in pipe config (pipe can choose to inherit config from a grand-pipe in-oppose to the immediate parent)
+
+- [ ] pipelines: multi pipe line config
+> - Run pipelines in isolated processes (however they all start from the root config)
+> - Allow special @wait param in pipe config (wait for an event in a parallel pipeline)
+
+#### Tasks (classes that do the actual work!)
+- [ ] TBC - consideration for various cloud vendors (initial implementation for one)
+
+#### Commands
+- [ ] find:instances - find instances
+- [ ] kill - terminate instances
+- [ ] find:image - find instances
+- [ ] delete - delete an image
+
+#### Release
 - [ ] tag v0.1.0
