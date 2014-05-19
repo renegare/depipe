@@ -4,7 +4,7 @@ namespace App\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 
-class BuildCommand extends \App\TaskMasterCommand {
+class BuildCommand extends \App\Command {
 
     protected function configure()
     {

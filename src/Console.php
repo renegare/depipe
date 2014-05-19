@@ -122,6 +122,9 @@ class Console extends Application {
                 $value = $this->getClient()
                     ->convertToInstances($value);
                 break;
+            case 'load_balancer':
+                $value = $this->getClient()
+                    ->convertToLoadBalancer($value);
         }
 
         return $value;

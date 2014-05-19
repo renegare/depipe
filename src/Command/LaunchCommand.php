@@ -4,7 +4,7 @@ namespace App\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 
-class LaunchCommand extends \App\TaskMasterCommand {
+class LaunchCommand extends \App\Command {
 
     protected function configure()
     {

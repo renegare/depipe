@@ -4,7 +4,7 @@ namespace App\Command;
 
 use Symfony\Component\Console\Input\InputInterface;
 
-class ConnectCommand extends \App\TaskMasterCommand {
+class ConnectCommand extends \App\Command {
 
     protected function configure()
     {
@@ -15,16 +15,12 @@ class ConnectCommand extends \App\TaskMasterCommand {
 
     protected function doExecute(InputInterface $input) {
 
-        $client = $this->get('client');
+        $client = $this->getClient();
         $loadBalancer = $this->get('load_balancer');
         $instances = $this->getSubCommandValue('launch', 'instances');
 
-        $this->getTask('connect_to_loadbalancer')
-            ->setClient($client)
-            ->setLoadBalancer($loadBalancer)
-            ->setInstances($instances)
-            ->run();
+        $client->connectInstancesToLoadBalancer($instances, $loadBalancer);
 
-        $this->info(sprintf('Connected %s instance(s) to load balancer \'%s\'', count($instances), $loadBalancer));
+        $this->info(sprintf('Connected %s instance(s) to load balancer', count($instances)));
     }
 }

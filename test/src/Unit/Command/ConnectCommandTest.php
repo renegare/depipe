@@ -16,30 +16,43 @@ class ConnectCommandTest extends ConsoleTestCase {
      * - RUN connect_to_loadbalancer task: [client, [instance(s)], loadbalancer]
      */
     public function testExecution() {
-        return;
+
         $app = $this->getApplication();
         $command = $app->find('connect');
         $this->assertInstanceOf('App\Command\ConnectCommand', $command);
 
-        $mockInstances = [$this->getMock('App\Instance'), $this->getMock('App\Instance')];
-        $mockClient = $this->getMock('App\Client');
+        $mockInstances = [$this->getMock('App\Platform\InstanceInterface'), $this->getMock('App\Platform\InstanceInterface')];
+        $mockLoadBalancer = $this->getMock('App\Platform\LoadBalancerInterface');
 
         $expectedConfig = [
             'instances' => $mockInstances,
-            'client' => $mockClient,
             'load_balancer' => 'load-balancer-identifier'
         ];
 
         $app->setConfig($expectedConfig);
 
-        $this->mockTask('connect_to_loadbalancer', $command, [
-            'client' => $mockClient,
-            'instances' => $mockInstances,
-            'load_balancer' => 'load-balancer-identifier']);
+        $mockClient = $this->getMock('App\Platform\ClientInterface');
+        $mockClient->expects($this->once())
+            ->method('connectInstancesToLoadBalancer')
+            ->will($this->returnCallback(function($instances, $loadBalancer) use ($mockLoadBalancer, $mockInstances){
+                $this->assertEquals($instances, $mockInstances);
+                $this->assertEquals($loadBalancer, $mockLoadBalancer);
+            }));
+        $mockClient->expects($this->once())
+            ->method('convertToInstances')
+            ->will($this->returnValue($mockInstances));
+
+        $mockClient->expects($this->once())
+            ->method('convertToLoadBalancer')
+            ->will($this->returnCallback(function($loadBalancerName) use ($expectedConfig, $mockLoadBalancer){
+                $this->assertEquals($expectedConfig['load_balancer'], $loadBalancerName);
+                return $mockLoadBalancer;
+            }));
+        $app->setClient($mockClient);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $this->assertContains('Connected 2 instance(s) to load balancer \'load-balancer-identifier\'', $commandTester->getDisplay());
+        $this->assertContains('Connected 2 instance(s) to load balancer', $commandTester->getDisplay());
     }
 }
