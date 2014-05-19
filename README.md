@@ -55,8 +55,8 @@ Help Needed
 ----------------------
 ### Road Map to v0.1.0 (prototype-release)
 
-#### Tasks (classes that do the actual work!)
-- [ ] TBC - consideration for various cloud vendors (initial implementation for one)
+#### ~~Tasks (classes that do the actual work!)~~
+- [ ] ~~TBC - consideration for various cloud vendors (initial implementation for one)~~
 
 #### Cloud Platform Interfaces
 - [ ] App\Platform\ClientInterface
