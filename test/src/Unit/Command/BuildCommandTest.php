@@ -23,22 +23,23 @@ class BuildCommandTest extends ConsoleTestCase {
         $command = $app->find('build');
         $this->assertInstanceOf('App\Command\BuildCommand', $command);
 
-        $mockInstances = [$this->getMock('App\Instance')];
-        $mockClient = $this->getMock('App\Client');
+        $mockInstances = [$this->getMock('App\Platform\InstanceInterface'),    $this->getMock('App\Platform\InstanceInterface')];
+        $mockClient = $this->getMock('App\Platform\ClientInterface');
+        $mockImage = $this->getMock('App\Platform\ImageInterface');
 
         $expectedConfig = [
             'instances' => $mockInstances,
-            'client' => $mockClient,
             'image_name' => 'new-image'
         ];
-
+        $app->setClient($mockClient);
         $app->setConfig($expectedConfig);
 
-        $mockImage = $this->getMock('App\Image');
-        $this->mockTask('snapshot_instance', $command, [
-            'client' => $mockClient,
-            'instance' => $mockInstances[0],
-            'image_name' => $expectedConfig['image_name']], $mockImage);
+        $mockClient->expects($this->once())
+            ->method('snapshotInstance')
+            ->will($this->returnCallback(function($instance, $imageName) use ($mockImage, $mockInstances){
+                $this->assertEquals($mockInstances[0], $instance);
+                return $mockImage;
+            }));
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
@@ -55,9 +56,10 @@ class BuildCommandTest extends ConsoleTestCase {
      */
     public function testInstancesPipeIn() {
         $app = $this->getApplication();
-        $mockInstances = [$this->getMock('App\Instance')];
-        $mockClient = $this->getMock('App\Client');
-        $mockImage = $this->getMock('App\Image');
+        $command = $app->find('build');
+        $mockInstances = [$this->getMock('App\Platform\InstanceInterface')];
+        $mockClient = $this->getMock('App\Platform\ClientInterface');
+        $mockImage = $this->getMock('App\Platform\ImageInterface');
 
         $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
         $mockLaunchCommand->expects($this->once())
@@ -69,16 +71,20 @@ class BuildCommandTest extends ConsoleTestCase {
         $app->add($mockLaunchCommand);
 
         $expectedConfig = [
-            'client' => $mockClient,
             'image_name' => 'new-image'
         ];
         $app->setConfig($expectedConfig);
+        $app->setClient($mockClient);
 
-        $command = $app->find('build');
-        $this->mockTask('snapshot_instance', $command, [
-            'client' => $mockClient,
-            'instance' => $mockInstances[0],
-            'image_name' => $expectedConfig['image_name']], $mockImage);
+        $app->setClient($mockClient);
+        $app->setConfig($expectedConfig);
+
+        $mockClient->expects($this->once())
+            ->method('snapshotInstance')
+            ->will($this->returnCallback(function($instance, $imageName) use ($mockImage, $mockInstances){
+                $this->assertEquals($mockInstances[0], $instance);
+                return $mockImage;
+            }));
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);

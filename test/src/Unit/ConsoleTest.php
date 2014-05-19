@@ -113,8 +113,4 @@ class ConsoleTest extends ConsoleTestCase {
     public function teardown() {
         @unlink('depipe-mock.yml');
     }
-
-    public function testGetClient() {
-
-    }
 }

@@ -10,11 +10,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Symfony\Component\Yaml\Parser;
+use App\Platform\ClientInterface;
 
 class Console extends Application {
 
     protected $config = [];
     protected $logger;
+    protected $client;
 
     public function setConfig(array $config) {
         $this->config = $config;
@@ -98,5 +100,13 @@ class Console extends Application {
 
     public function appendConfig(array $config) {
         $this->config = array_merge($this->config, $config);
+    }
+
+    public function setClient(ClientInterface $client) {
+        $this->client = $client;
+    }
+
+    public function getClient() {
+        return $this->client;
     }
 }
