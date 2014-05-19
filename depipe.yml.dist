@@ -1,0 +1,12 @@
+parameters:
+    credentials: # credentials should contain params that the vendor of your choice will understand
+        secret: {{env PLATFORM_SECRET}}
+        vendor: depipe
+
+pipeline: # this is a single pipe line configuration. Each step/pipe is run one after another in the that exact order
+    'build web app':
+        image: ami-123456
+    'launch web app instances':
+        instances_count: 2
+    'connect to web apps to load balancer':
+        load_balancer: elb-123456

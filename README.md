@@ -53,15 +53,28 @@ Help Needed
 - [ ] Better arch idea around testing + deploying to a shared host (not everyone needs to launch an instance per app!)
 
 ----------------------
-### Road Map to v0.1.0 (useful-release)
+### Road Map to v0.1.0 (prototype-release)
+
+#### Tasks (classes that do the actual work!)
+- [ ] TBC - consideration for various cloud vendors (initial implementation for one)
+
+#### Cloud Platform Interfaces
+- [ ] App\Platform\ClientInterface
+- [ ] App\Platform\ImageInterface
+- [ ] App\Platform\InstanceInterface
+- [ ] App\Platform\LoadBalancerInterface
+
+#### Release
+- [ ] tag v0.1.0
+
+---
+
+### Road Map to v0.2.0 (useful-release)
 
 #### Configuration (depipe.yml.dist)
 - [ ] pipelines: multi pipe line config
 > - Run pipelines in isolated processes (however they all start from the root config)
 > - Allow special @wait param in pipe config (wait for an event in a parallel pipeline)
-
-#### Tasks (classes that do the actual work!)
-- [ ] TBC - consideration for various cloud vendors (initial implementation for one)
 
 #### Commands
 - [ ] find:instances - find instances
@@ -70,4 +83,4 @@ Help Needed
 - [ ] delete - delete an image
 
 #### Release
-- [ ] tag v0.1.0
+- [ ] tag v0.2.0
