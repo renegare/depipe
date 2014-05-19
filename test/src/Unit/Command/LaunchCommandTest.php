@@ -24,11 +24,9 @@ class LaunchCommandTest extends ConsoleTestCase {
         $app = $this->getApplication();
         $command = $app->find('launch');
         $this->assertInstanceOf('App\Command\LaunchCommand', $command);
-        $mockClient = $this->getMock('App\Client');
 
         $expectedConfig = [
-            'client' => $mockClient,
-            'image' => 'image-1234abc5',
+            'image' => 'test-image-1234abc5',
             'userdata_config' => [
                 'runcmd' => [
                     "echo $(date) > running.since"]],
@@ -39,20 +37,33 @@ class LaunchCommandTest extends ConsoleTestCase {
             ],
             'instance_count' => 1
         ];
-
         $app->setConfig($expectedConfig);
 
-        $mockInstance = $this->getMock('App\Instance');
-        $this->mockTask('launch_instances', $command, [
-            'client' => $mockClient,
-            'image' => $expectedConfig['image'],
-            'userdata_config' => $expectedConfig['userdata_config'],
-            'instance_config' => $expectedConfig['instance_config']], [$mockInstance]);
-
-        $this->mockTask('provision_instances', $command, [
-            'client' => $mockClient,
-            'instance' => [$mockInstance],
-            'shell_scripts' => $expectedConfig['shell_scripts']]);
+        $mockInstance = $this->getMock('App\Platform\InstanceInterface');
+        $mockImage = $this->getMock('App\Platform\ImageInterface');
+        $mockClient = $this->getMock('App\Platform\ClientInterface');
+        $mockClient->expects($this->once())
+            ->method('launchInstances')
+            ->will($this->returnCallback(function($image, $instanceCount, $instanceConfig, $userDataConfig) use ($expectedConfig, $mockInstance, $mockImage){
+                $this->assertEquals($image, $mockImage);
+                $this->assertEquals($instanceCount, $expectedConfig['instance_count']);
+                $this->assertEquals($userDataConfig, $expectedConfig['userdata_config']);
+                $this->assertEquals($instanceConfig, $expectedConfig['instance_config']);
+                return [$mockInstance];
+            }));
+        $mockClient->expects($this->once())
+            ->method('provisionInstances')
+            ->will($this->returnCallback(function($instances, $shellScripts) use ($expectedConfig, $mockInstance){
+                $this->assertEquals([$mockInstance], $instances);
+                $this->assertEquals($shellScripts, $expectedConfig['shell_scripts']);
+            }));
+        $mockClient->expects($this->once())
+            ->method('convertToImage')
+            ->will($this->returnCallback(function($imageID) use ($expectedConfig, $mockImage){
+                $this->assertEquals($expectedConfig['image'], $imageID);
+                return $mockImage;
+            }));
+        $app->setClient($mockClient);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);

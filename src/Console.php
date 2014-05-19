@@ -34,7 +34,9 @@ class Console extends Application {
             $this->setConfigValue($key, $default);
         }
 
-        return $this->config[$key];
+        $value = $this->handlePlatfromObjects($key, $this->config[$key]);
+
+        return $value;
     }
 
     public function setConfigValue($key, $value) {
@@ -108,5 +110,20 @@ class Console extends Application {
 
     public function getClient() {
         return $this->client;
+    }
+
+    public function handlePlatfromObjects($key, $value) {
+        switch($key) {
+            case 'image':
+                $value = $this->getClient()
+                    ->convertToImage($value);
+                break;
+            case 'instances':
+                $value = $this->getClient()
+                    ->convertToInstances($value);
+                break;
+        }
+
+        return $value;
     }
 }

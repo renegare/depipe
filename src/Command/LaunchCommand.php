@@ -15,20 +15,18 @@ class LaunchCommand extends \App\TaskMasterCommand {
 
     protected function doExecute(InputInterface $input) {
 
-        $client = $this->get('client');
+        $client = $this->getClient();
+        $image = $this->get('image');
+        $userDataConfig = $this->get('userdata_config');
+        $instanceConfig = $this->get('instance_config');
+        $instanceCount = $this->get('instance_count');
+        $shellScripts = $this->get('shell_scripts');
 
-        $instances = $this->getTask('launch_instances')
-            ->setClient($client)
-            ->setImage($this->get('image'))
-            ->setUserdataConfig($this->get('userdata_config'))
-            ->setInstanceConfig($this->get('instance_config'))
-            ->run();
+        $instances = $client->launchInstances($image, $instanceCount, $instanceConfig, $userDataConfig);
 
-        $this->getTask('provision_instances')
-            ->setClient($client)
-            ->setShellScripts($this->get('shell_scripts'))
-            ->setInstance($instances)
-            ->run();
+        $client->provisionInstances($instances, $shellScripts);
+
+        $this->set('instances', $instances);
 
         $this->info(sprintf('Launched %s instance(s)', count($instances)));
     }
