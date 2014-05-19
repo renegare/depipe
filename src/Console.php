@@ -87,4 +87,16 @@ class Console extends Application {
             }
         }, $config);
     }
+
+    public function getPipeline() {
+        return $this->pipeline;
+    }
+
+    public function setPipeline($config) {
+        return $this->pipeline = $config;
+    }
+
+    public function appendConfig(array $config) {
+        $this->config = array_merge($this->config, $config);
+    }
 }

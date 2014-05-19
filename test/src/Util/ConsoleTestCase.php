@@ -22,9 +22,8 @@ abstract class ConsoleTestCase extends \PHPUnit_Framework_TestCase
             ->find($name);
     }
 
-    protected function mockCommand($name, array $methods = []) {
+    protected function mockCommand(Application $app, $name, array $methods = []) {
         $mockCommand = $this->getMockForAbstractClass('App\Command', [$name], '', true, true, true, $methods);
-        $app = $this->getApplication();
         $app->add($mockCommand);
         $command = $app->find($name);
         $this->assertSame($command, $mockCommand);
