@@ -100,7 +100,39 @@ class PipelineCommandTest extends ConsoleTestCase {
         ], $executionOrder->order);
     }
 
-    public function mockPipeCommands(array $pipelineConfig, Application $app, array $expectedFinalConfig = []) {
+    /**
+     * @expectedException InvalidArgumentException
+     */
+    public function testInvalidSpecialParam() {
+       $app = $this->getApplication();
+       $command = $app->find('pipeline');
+       $this->assertInstanceOf('App\Command\PipelineCommand', $command);
+
+       $pipelineConfig = [
+           'launch web app instance' => [
+               'launch_config' => 'launch_value',
+               'instance_count' => 2
+           ],
+           'launch db instance' => [
+               'launch_config' => 'launch_value',
+               'instance_count' => 1
+           ],
+           'connect web apps to elb' => [
+               '@wth' => 'launch web app instance',
+               'connect_config' => 'connect_value'
+           ]
+       ];
+       $app->setPipeline($pipelineConfig);
+
+       list($executionOrder, $expectedFinalConfig) = $this->mockPipeCommands($pipelineConfig, $app, [
+           'user_config' => 'yeah from the begining'
+       ], true);
+
+       $commandTester = new CommandTester($command);
+       $commandTester->execute(['command' => $command->getName()]);
+    }
+
+    public function mockPipeCommands(array $pipelineConfig, Application $app, array $expectedFinalConfig = [], $expectAnyCalls = false) {
 
         $app->setConfig($expectedFinalConfig);
         $executionOrder = new \stdClass;
@@ -130,7 +162,7 @@ class PipelineCommandTest extends ConsoleTestCase {
         foreach($mockedCommands as $mock) {
             list($mockCommand, $doExecuteCallbacks) = $mock;
 
-            $mockCommand->expects($this->exactly(count($doExecuteCallbacks)))
+            $mockCommand->expects($expectAnyCalls? $this->any() : $this->exactly(count($doExecuteCallbacks)))
                 ->method('doExecute')
                 ->will($this->returnCallback(function() use ($mockCommand, &$mockedCommands){
                     $callback = array_shift($mockedCommands[$mockCommand->getName()][1]);

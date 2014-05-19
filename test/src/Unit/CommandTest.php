@@ -81,10 +81,6 @@ class AbstractCommandTest extends ConsoleTestCase {
         $commandTester = new CommandTester($command);
         $commandTester->execute(array('command' => $command->getName()));
     }
-
-    public function testGetClient() {
-
-    }
 }
 
 class AbstractCommandTestException extends \Exception {}

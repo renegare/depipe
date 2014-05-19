@@ -41,6 +41,8 @@ class PipelineCommand extends \App\Command{
                     case '@from':
                         $config = $this->getConfigFrom($value, $config);
                         break;
+                    default:
+                        throw new \InvalidArgumentException(sprintf('Unexpected %s parameter', $key));
 
                 }
 
