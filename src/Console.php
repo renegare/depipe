@@ -109,6 +109,13 @@ class Console extends Application {
     }
 
     public function getClient() {
+        if(!$this->client) {
+            $crendtials = $this->getConfigValue('credentials');
+            $class = $crendtials['vendor'];
+            $client = new $class;
+            $client->setCredentials($crendtials);
+            $this->client = $client;
+        }
         return $this->client;
     }
 

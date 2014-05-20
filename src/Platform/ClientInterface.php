@@ -8,6 +8,10 @@ use App\Platform\LoadBalancerInterface;
 
 interface ClientInterface {
 
+    public function setCredentials(array $credentials);
+
+    public function getCredentials();
+
     public function convertToImage($imageId);
 
     public function convertToInstances(array $instances);

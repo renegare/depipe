@@ -55,14 +55,17 @@ Help Needed
 ----------------------
 ### Road Map to v0.1.0 (prototype-release)
 
-#### ~~Tasks (classes that do the actual work!)~~
-- [ ] ~~TBC - consideration for various cloud vendors (initial implementation for one)~~
-
 #### Cloud Platform Interfaces
-- [ ] App\Platform\ClientInterface
-- [ ] App\Platform\ImageInterface
-- [ ] App\Platform\InstanceInterface
-- [ ] App\Platform\LoadBalancerInterface
+- [x] App\Platform\ClientInterface
+- [x] App\Platform\ImageInterface
+- [x] App\Platform\InstanceInterface
+- [x] App\Platform\LoadBalancerInterface
+
+#### Aws Platform Concrete Classes
+- [ ] App\Platform\Aws\Client
+- [ ] App\Platform\Aws\Image
+- [ ] App\Platform\Aws\Instance
+- [ ] App\Platform\Aws\LoadBalancer
 
 #### Release
 - [ ] tag v0.1.0

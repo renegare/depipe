@@ -8,6 +8,10 @@ use Symfony\Component\Yaml\Dumper;
 
 class ConsoleTest extends ConsoleTestCase {
 
+    public function teardown() {
+        @unlink('depipe-mock.yml');
+    }
+
     /**
      * assert --log|-l option
      */
@@ -110,7 +114,20 @@ class ConsoleTest extends ConsoleTestCase {
         ]);
     }
 
-    public function teardown() {
-        @unlink('depipe-mock.yml');
+    public function testGetClient() {
+        $app = $this->getApplication();
+        $app->setConfig([
+            'credentials' => [
+                'secret' => 'secret-123456',
+                'vendor' => 'App\Test\Util\Mock\PlatformClient'
+            ]
+        ]);
+
+        $client = $app->getClient();
+        $this->assertInstanceOf('App\Test\Util\Mock\PlatformClient', $client);
+        $this->assertEquals([
+            'secret' => 'secret-123456',
+            'vendor' => 'App\Test\Util\Mock\PlatformClient'
+        ], $client->getCredentials());
     }
 }
