@@ -87,7 +87,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testConvertToImage() {
-        $response = new GuzzleModel(json_decode(file_get_contents(PROJECT_ROOT . '/test/mock_responses/aws/describe_images_response.json'), true));
+        $response = $this->getGuzzleModelResponse('aws/describe_images_response');
 
         $mockEc2Client = $this->getMockEc2Client(['describeImages']);
         $mockEc2Client->expects($this->once())
@@ -108,5 +108,13 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertInstanceof('App\Platform\Aws\Image', $image);
         $this->assertEquals('ami-123456', $image->getId());
+    }
+
+
+
+    public function getGuzzleModelResponse($fileKey) {
+        return new GuzzleModel(
+            json_decode(
+                file_get_contents(sprintf(PROJECT_ROOT . '/test/mock_responses/%s.json', $fileKey)), true));
     }
 }
