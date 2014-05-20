@@ -38,12 +38,25 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
                     'AnotherConfig' => '12324'
                 ], $config);
 
-                return $mockResponse;
+                return new GuzzleModel([
+                        'Instances' => [['InstanceId' => 'i-123456']]
+                    ]);
+            }));
+        $mockEc2Client->expects($this->once())
+            ->method('waitUntilInstanceRunning')
+            ->will($this->returnCallback(function($config) {
+                $this->assertEquals(['InstanceIds' => ['i-123456']], $config);
+            }));
+        $mockEc2Client->expects($this->once())
+            ->method('describeInstances')
+            ->will($this->returnCallback(function($config) {
+                $this->assertEquals(['InstanceIds' => ['i-123456']], $config);
+                return $this->getGuzzleModelResponse('aws/run_instances_single');
             }));
 
 
         $client = $this->getMockClient(['getEc2Client']);
-        $client->expects($this->once())
+        $client->expects($this->any())
             ->method('getEc2Client')
             ->will($this->returnValue($mockEc2Client));
         $instances = $client->launchInstances($image, 1, $instanceConfig, $userDataConfig);

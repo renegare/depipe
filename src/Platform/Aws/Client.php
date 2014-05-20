@@ -31,7 +31,18 @@ class Client implements ClientInterface {
     }
 
     public function convertToInstances(array $instances) {
-        throw new \Exception('Not Implemented');
+        $response = $this->getEc2Client()
+            ->describeInstances([
+                'InstanceIds' => $instances
+            ]);
+
+        $instanceObjects = [];
+        $instanceDescriptions = $response->getPath('Instances');
+        foreach($instanceDescriptions as $k => $instanceDescription) {
+            $instanceObjects[] = new Instance($instanceDescription['InstanceId'], $instanceDescription);
+        }
+
+        return $instanceObjects;
     }
 
     public function convertToLoadBalancer($loadBalancer) {
