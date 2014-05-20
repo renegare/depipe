@@ -6,6 +6,8 @@ use App\Platform\ClientInterface;
 use App\Platform\InstanceInterface;
 use App\Platform\ImageInterface;
 use App\Platform\LoadBalancerInterface;
+use Aws\Ec2\Ec2Client;
+use Symfony\Component\Yaml\Dumper;
 
 class Client implements ClientInterface {
 
@@ -20,7 +22,12 @@ class Client implements ClientInterface {
     }
 
     public function convertToImage($imageId) {
-        throw new \Exception('Not Implemented');
+        $response = $this->getEc2Client()
+            ->describeImages([
+                'ImageIds' => [$imageId]
+            ]);
+
+        return new Image($imageId, $response->getPath('Images/0'));
     }
 
     public function convertToInstances(array $instances) {
@@ -36,7 +43,24 @@ class Client implements ClientInterface {
     }
 
     public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], array $userDataConfig=[]) {
-        throw new \Exception('Not Implemented');
+        $config = array_merge($instanceConfig, [
+            'ImageId' => $image->getId(),
+            'MinCount' => $instanceCount,
+            'MaxCount' => $instanceCount
+        ]);
+
+        if(count($userDataConfig)) {
+            $yamlDumper = new Dumper();
+            $config['UserData'] = base64_encode("#cloud-config\n" . $yamlDumper->dump($userDataConfig));
+        }
+
+        $ec2Client = $this->getEc2Client();
+        $responses = $ec2Client->runInstances($config);
+
+        $instanceIds = $responses->getPath('Instances/*/InstanceId');
+        $ec2Client->waitUntilInstanceRunning(array('InstanceIds' => $instanceIds));
+
+        return $this->convertToInstances($instanceIds);
     }
 
     public function provisionInstances(array $instances, array $shellScripts) {
@@ -45,5 +69,9 @@ class Client implements ClientInterface {
 
     public function connectInstancesToLoadBalancer(array $instances, LoadBalancerInterface $loadBalancer) {
         throw new \Exception('Not Implemented');
+    }
+
+    public function getEc2Client() {
+        return Ec2Client::factory($this->getCredentials());
     }
 }
