@@ -1,7 +1,7 @@
 parameters:
     credentials: # credentials should contain params that the vendor of your choice will understand
         secret: {{env PLATFORM_SECRET}}
-        vendor: depipe
+        vendor: App\Platform\DePipe\Client #full client class of the platform
 
 pipeline: # this is a single pipe line configuration. Each step/pipe is run one after another in the that exact order
     'build web app':
