@@ -12,6 +12,7 @@ use Monolog\Handler\StreamHandler;
 use Symfony\Component\Yaml\Parser;
 use App\Platform\ClientInterface;
 use App\Platform\InstanceAccessInterface;
+use App\Util\InstanceAccess\SSHAccess;
 
 class Console extends Application {
 
@@ -130,6 +131,11 @@ class Console extends Application {
     }
 
     public function getInstanceAccess() {
+        if(!$this->instanceAccess) {
+            $this->instanceAccess = new SSHAccess();
+        }
+
+        $this->instanceAccess->setCredentials($this->getConfigValue('instance.access'));
         return $this->instanceAccess;
     }
 

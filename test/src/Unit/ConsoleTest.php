@@ -116,8 +116,9 @@ class ConsoleTest extends ConsoleTestCase {
     }
 
     public function testGetClient() {
-        P\replace('App\Test\Util\Mock\PlatformClient::setCredentials', function($config){
-            $this->assertEquals([
+        $self = $this;
+        P\replace('App\Test\Util\Mock\PlatformClient::setCredentials', function($config) use ($self){
+            $self->assertEquals([
                 'secret' => 'secret-123456',
                 'vendor' => 'App\Test\Util\Mock\PlatformClient'
             ], $config);
@@ -130,5 +131,31 @@ class ConsoleTest extends ConsoleTestCase {
                 'vendor' => 'App\Test\Util\Mock\PlatformClient'
             ]
         ]);
+
+        $client = $app->getClient();
+        $this->assertInstanceOf('App\Platform\ClientInterface', $client);
+    }
+
+    public function testGetInstanceAccess() {
+        $self = $this;
+        P\replace('App\Util\InstanceAccess\SSHAccess::setCredentials', function($config) use ($self){
+            $self->assertEquals([
+                'root' => 'secret-123456',
+                'password' => 'pw',
+                'private.key' => 'pk'
+            ], $config);
+        });
+
+        $app = $this->getApplication();
+        $app->setConfig([
+            'instance.access' => [
+                'root' => 'secret-123456',
+                'password' => 'pw',
+                'private.key' => 'pk'
+            ]
+        ]);
+
+        $access = $app->getInstanceAccess();
+        $this->assertInstanceOf('App\Platform\InstanceAccessInterface', $access);
     }
 }
