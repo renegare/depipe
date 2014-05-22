@@ -5,6 +5,7 @@ namespace App\Test\Command;
 use App\Test\Util\ConsoleTestCase;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Yaml\Dumper;
+use Patchwork as P;
 
 class ConsoleTest extends ConsoleTestCase {
 
@@ -115,6 +116,13 @@ class ConsoleTest extends ConsoleTestCase {
     }
 
     public function testGetClient() {
+        P\replace('App\Test\Util\Mock\PlatformClient::setCredentials', function($config){
+            $this->assertEquals([
+                'secret' => 'secret-123456',
+                'vendor' => 'App\Test\Util\Mock\PlatformClient'
+            ], $config);
+        });
+
         $app = $this->getApplication();
         $app->setConfig([
             'credentials' => [
@@ -122,12 +130,5 @@ class ConsoleTest extends ConsoleTestCase {
                 'vendor' => 'App\Test\Util\Mock\PlatformClient'
             ]
         ]);
-
-        $client = $app->getClient();
-        $this->assertInstanceOf('App\Test\Util\Mock\PlatformClient', $client);
-        $this->assertEquals([
-            'secret' => 'secret-123456',
-            'vendor' => 'App\Test\Util\Mock\PlatformClient'
-        ], $client->getCredentials());
     }
 }
