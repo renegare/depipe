@@ -89,7 +89,7 @@ class Client implements ClientInterface {
     public function provisionInstances(array $instances, array $shellScripts, $user = 'root', $privateKey = null) {
         $sshClient = $this->getSSHClient();
         foreach($instances as $instance) {
-            $sshClient->connect($user, $instance->getHostName(), $privateKey);
+            $sshClient->connect($user, $instance->getHost(), $privateKey);
             foreach($shellScripts as $script) {
                 $sshClient->executeShellScript($script);
             }
