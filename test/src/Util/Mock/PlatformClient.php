@@ -6,8 +6,11 @@ use App\Platform\ClientInterface;
 use App\Platform\InstanceInterface;
 use App\Platform\ImageInterface;
 use App\Platform\LoadBalancerInterface;
+use Psr\Log\LoggerTrait;
+use Psr\Log\LoggerAwareTrait;
 
 class PlatformClient implements ClientInterface {
+    use LoggerTrait, LoggerAwareTrait;
 
     protected $credentials;
 
@@ -39,7 +42,7 @@ class PlatformClient implements ClientInterface {
         throw new \Exception('Not Implemented');
     }
 
-    public function provisionInstances(array $instances, array $shellScripts) {
+    public function provisionInstances(array $instances, array $shellScripts, $user = 'root', $privateKey = null) {
         throw new \Exception('Not Implemented');
     }
 
@@ -47,4 +50,9 @@ class PlatformClient implements ClientInterface {
         throw new \Exception('Not Implemented');
     }
 
+    public function log($level, $message, array $context = array()) {
+        if($this->logger) {
+            $this->logger->log($level, $message, $context);
+        }
+    }
 }

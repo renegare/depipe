@@ -5,8 +5,10 @@ namespace App\Platform;
 use App\Platform\InstanceInterface;
 use App\Platform\ImageInterface;
 use App\Platform\LoadBalancerInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareInterface;
 
-interface ClientInterface {
+interface ClientInterface extends LoggerAwareInterface, LoggerInterface {
 
     /**
      * set client credentials
@@ -74,12 +76,14 @@ interface ClientInterface {
      * Note: this method is rather limited to linux machines and not so elegant
      * handling of ssh private keys to get access ... so things may change in due
      * time.
-     * @param array - of InstanceInterface(s)
-     * @param array - of shell script file paths
-     * @throws Exception - from the platform
+     * @param array $instances - of InstanceInterface(s)
+     * @param array $shellScripts - of shell script file paths
+     * @param string $user - user to connect to the instances with
+     * @param string $privateKey - to use to authenticate with
+     * @throws Exception - from the platform / ssh client|connection
      * @return void
      */
-    public function provisionInstances(array $instances, array $shellScripts);
+    public function provisionInstances(array $instances, array $shellScripts, $user = 'root', $privateKey = null);
 
     /**
      * Connects instances to a load balancer

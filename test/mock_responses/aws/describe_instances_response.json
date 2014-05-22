@@ -1,0 +1,74 @@
+{
+    "requestId": "000000-000000-000000-000000-000000",
+    "Reservations": [
+        {
+            "ReservationId": "r-000000",
+            "OwnerId": "000000",
+            "Groups": [
+                {
+                    "GroupName": "launch-wizard-00",
+                    "GroupId": "sg-000000"
+                }
+            ],
+            "Instances": [
+                {
+                    "InstanceId": "i-000000",
+                    "ImageId": "ami-000000",
+                    "State": {
+                        "Code": "16",
+                        "Name": "running"
+                    },
+                    "PrivateDnsName": "ip-255-255-255-255.ec2.internal",
+                    "PublicDnsName": "ec2-255-255-255-255.compute-1.amazonaws.com",
+                    "StateTransitionReason": "",
+                    "KeyName": "UnknownKey",
+                    "AmiLaunchIndex": "0",
+                    "ProductCodes": [
+                        {
+                            "ProductCodeId": "000000",
+                            "ProductCodeType": "marketplace"
+                        }
+                    ],
+                    "InstanceType": "t1.micro",
+                    "LaunchTime": "2014-05-22T11:48:57.000Z",
+                    "Placement": {
+                        "AvailabilityZone": "us-east-1d",
+                        "GroupName": "",
+                        "Tenancy": "default"
+                    },
+                    "KernelId": "aki-000000",
+                    "Monitoring": {
+                        "State": "disabled"
+                    },
+                    "PrivateIpAddress": "255.255.255.255",
+                    "PublicIpAddress": "255.255.255.255",
+                    "Architecture": "x86_64",
+                    "RootDeviceType": "ebs",
+                    "RootDeviceName": "/dev/sda1",
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/sda",
+                            "Ebs": {
+                                "VolumeId": "vol-00000000",
+                                "Status": "attached",
+                                "AttachTime": "2014-05-22T11:49:00.000Z",
+                                "DeleteOnTermination": true
+                            }
+                        }
+                    ],
+                    "VirtualizationType": "paravirtual",
+                    "ClientToken": "00000000",
+                    "SecurityGroups": [
+                        {
+                            "GroupName": "launch-wizard-00",
+                            "GroupId": "sg-00000000"
+                        }
+                    ],
+                    "Hypervisor": "xen",
+                    "NetworkInterfaces": [],
+                    "EbsOptimized": false
+                }
+            ]
+        }
+    ]
+}

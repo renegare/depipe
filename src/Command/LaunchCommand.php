@@ -16,15 +16,18 @@ class LaunchCommand extends \App\Command {
     protected function doExecute(InputInterface $input) {
 
         $client = $this->getClient();
-        $image = $this->get('image');
-        $userDataConfig = $this->get('userdata_config');
-        $instanceConfig = $this->get('instance_config');
-        $instanceCount = $this->get('instance_count');
-        $shellScripts = $this->get('shell_scripts');
+        $image = $this->getImage();
+        $userDataConfig = $this->get('userdata.config');
+        $instanceConfig = $this->get('instance.config');
+        $instanceCount = $this->get('instance.count');
+        $scripts = $this->get('scripts');
+        $instanceAccess = $this->getInstanceAccess();
 
         $instances = $client->launchInstances($image, $instanceCount, $instanceConfig, $userDataConfig);
 
-        $client->provisionInstances($instances, $shellScripts);
+        foreach($instances as $instance) {
+            $instance->provisionWith($instanceAccess, $scripts);
+        }
 
         $this->set('instances', $instances);
 

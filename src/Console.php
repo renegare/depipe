@@ -11,12 +11,14 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Symfony\Component\Yaml\Parser;
 use App\Platform\ClientInterface;
+use App\Platform\InstanceAccessInterface;
 
 class Console extends Application {
 
     protected $config = [];
     protected $logger;
     protected $client;
+    protected $instanceAccess;
 
     public function setConfig(array $config) {
         $this->config = $config;
@@ -34,9 +36,7 @@ class Console extends Application {
             $this->setConfigValue($key, $default);
         }
 
-        $value = $this->handlePlatfromObjects($key, $this->config[$key]);
-
-        return $value;
+        return $this->config[$key];
     }
 
     public function setConfigValue($key, $value) {
@@ -57,8 +57,8 @@ class Console extends Application {
 
             $log = new Logger('depipe');
             $log->pushHandler(new StreamHandler($logPath));
-
             $command->setLogger($log);
+            $this->logger = $command;
         }
 
         parent::doRunCommand($command, $input, $output);
@@ -105,6 +105,9 @@ class Console extends Application {
     }
 
     public function setClient(ClientInterface $client) {
+        if($this->logger) {
+            $client->setLogger($this->logger);
+        }
         $this->client = $client;
     }
 
@@ -113,27 +116,35 @@ class Console extends Application {
             $crendtials = $this->getConfigValue('credentials');
             $class = $crendtials['vendor'];
             $client = new $class;
+            if($this->logger) {
+                $client->setLogger($this->logger);
+            }
             $client->setCredentials($crendtials);
             $this->client = $client;
         }
         return $this->client;
     }
 
-    public function handlePlatfromObjects($key, $value) {
-        switch($key) {
-            case 'image':
-                $value = $this->getClient()
-                    ->convertToImage($value);
-                break;
-            case 'instances':
-                $value = $this->getClient()
-                    ->convertToInstances($value);
-                break;
-            case 'load_balancer':
-                $value = $this->getClient()
-                    ->convertToLoadBalancer($value);
-        }
+    public function setInstanceAccess(InstanceAccessInterface $instanceAccess) {
+        $this->instanceAccess = $instanceAccess;
+    }
 
-        return $value;
+    public function getInstanceAccess() {
+        return $this->instanceAccess;
+    }
+
+    public function getImage($default=null) {
+        return $this->getClient()
+            ->convertToImage($this->getConfigValue('image', $default));
+    }
+
+    public function getInstances($default=null) {
+        return $this->getClient()
+            ->convertToInstances($this->getConfigValue('instances', $default));
+    }
+
+    public function getLoadBalancer($default=null) {
+        return $this->getClient()
+            ->convertToLoadBalancer($this->getConfigValue('load.balancer', $default));
     }
 }

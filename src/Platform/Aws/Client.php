@@ -8,8 +8,12 @@ use App\Platform\ImageInterface;
 use App\Platform\LoadBalancerInterface;
 use Aws\Ec2\Ec2Client;
 use Symfony\Component\Yaml\Dumper;
+use App\Util\SSHClient;
+use Psr\Log\LoggerTrait;
+use Psr\Log\LoggerAwareTrait;
 
 class Client implements ClientInterface {
+    use LoggerTrait, LoggerAwareTrait;
 
     protected $credentials;
 
@@ -31,13 +35,21 @@ class Client implements ClientInterface {
     }
 
     public function convertToInstances(array $instances) {
+        $this->debug(sprintf('Requesting describeInstances of: %s', implode(', ', $instances)));
+
         $response = $this->getEc2Client()
             ->describeInstances([
                 'InstanceIds' => $instances
             ]);
 
+        $responseData = $response->toArray();
+
+        $this->debug('Got response of describeInstances', [
+            'response' => $responseData
+        ]);
+
         $instanceObjects = [];
-        $instanceDescriptions = $response->getPath('Instances');
+    $instanceDescriptions = $response->getPath('Reservations/*/Instances');
         foreach($instanceDescriptions as $k => $instanceDescription) {
             $instanceObjects[] = new Instance($instanceDescription['InstanceId'], $instanceDescription);
         }
@@ -74,8 +86,14 @@ class Client implements ClientInterface {
         return $this->convertToInstances($instanceIds);
     }
 
-    public function provisionInstances(array $instances, array $shellScripts) {
-        throw new \Exception('Not Implemented');
+    public function provisionInstances(array $instances, array $shellScripts, $user = 'root', $privateKey = null) {
+        $sshClient = $this->getSSHClient();
+        foreach($instances as $instance) {
+            $sshClient->connect($user, $instance->getHostName(), $privateKey);
+            foreach($shellScripts as $script) {
+                $sshClient->executeShellScript($script);
+            }
+        }
     }
 
     public function connectInstancesToLoadBalancer(array $instances, LoadBalancerInterface $loadBalancer) {
@@ -84,5 +102,19 @@ class Client implements ClientInterface {
 
     public function getEc2Client() {
         return Ec2Client::factory($this->getCredentials());
+    }
+
+    public function setSSHClient(SSHClient $sshClient) {
+        $this->sshClient = $sshClient;
+    }
+
+    public function getSSHClient() {
+        return $this->sshClient;
+    }
+
+    public function log($level, $message, array $context = array()) {
+        if($this->logger) {
+            $this->logger->log($level, $message, $context);
+        }
     }
 }

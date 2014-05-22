@@ -104,5 +104,13 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface, Logg
         return $this->getApplication()->getClient();
     }
 
+    protected function getInstanceAccess() {
+        return $this->getApplication()->getInstanceAccess();
+    }
+
+    protected function getImage() {
+        return $this->getApplication()->getImage();
+    }
+
     abstract protected function doExecute(InputInterface $input);
 }
