@@ -12,7 +12,9 @@
         "monolog/monolog": ">=v1",
         "symfony/console": ">=v2.4",
         "symfony/yaml": ">=v2.4.4",
-        "aws/aws-sdk-php": "2.6.0"
+        "aws/aws-sdk-php": "2.6.0",
+        "phpseclib/phpseclib": "0.3.6",
+        "symfony/http-foundation": "v2.4.5"
     },
     "require-dev": {
         "phpunit/phpunit": "4.1.0",
