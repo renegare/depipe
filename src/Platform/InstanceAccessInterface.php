@@ -22,8 +22,9 @@ interface InstanceAccessInterface {
     /**
      * execute code on the instance (e.g. shell script for linux)
      * @param string $code - code to execute
+     * @param Closure $callback - callback to execute on every response output
      * @throws Exception - if execution fails
      * @return void
      */
-    public function exec($code);
+    public function exec($code, $callback);
 }

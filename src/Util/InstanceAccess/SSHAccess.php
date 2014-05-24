@@ -42,13 +42,18 @@ class SSHAccess implements InstanceAccessInterface {
     /**
      * {@inheritdoc}
      */
-    public function exec($code) {
+    public function exec($code, $cb) {
         if(!$this->conn) {
             throw new \Exception('You are not connected to the server');
         }
 
-        $conn = new \Net_SFTP($this->host, 22, 1);
-        $conn->login($this->get('user'), $this->get('password'));
+        $sftp = new \Net_SFTP($this->host, 22, 1);
+        $sftp->login($this->get('user'), $this->get('password'));
+        $sftp->put('/tmp/execute.sh', $code);
+        $sftp->chmod(0550, '/tmp/execute.sh');
+        $this->conn->exec('/tmp/execute.sh', $cb);
+
+        // $exitCode = $ssh->getExitStatus();
     }
 
     public function get($path, $default = null, $deep = false) {

@@ -61,6 +61,22 @@ class SSHAccessTest extends \PHPUnit_Framework_TestCase {
             $this->assertEquals('test', $password);
         }, 1);
 
+        $this->patchClassMethod('Net_SFTP::put', function($remotePath, $code) {
+            $this->assertEquals('/tmp/execute.sh', $remotePath);
+            $this->assertEquals("#!/bin/bash\ndate", $code);
+        }, 1);
+
+        $this->patchClassMethod('Net_SFTP::chmod', function($premissions, $remotePath) {
+            $this->assertEquals('/tmp/execute.sh', $remotePath);
+            $this->assertEquals(0550, $premissions);
+        }, 1);
+
+        $mockCallback = function(){};
+        $this->patchClassMethod('Net_SSH2::exec', function($command, $cb) use ($mockCallback){
+            $this->assertEquals('/tmp/execute.sh', $command);
+            $this->assertEquals($mockCallback, $cb);
+        }, 1);
+
         $access = new SSHAccess();
         $access->setCredentials([
             'user' => 'root',
@@ -68,7 +84,7 @@ class SSHAccessTest extends \PHPUnit_Framework_TestCase {
         ]);
 
         $access->connect('test.somewhere.com');
-        $access->exec('date');
+        $access->exec("#!/bin/bash\ndate", $mockCallback);
     }
 
     public function patchClassMethod($patchTarget, \Closure $patch=null, $expectedCallCount=null) {
@@ -102,8 +118,4 @@ class SSHAccessTest extends \PHPUnit_Framework_TestCase {
             }
         });
     }
-}
-
-class MockStub {
-    public function doSomething() {}
 }
