@@ -17,15 +17,13 @@ class SSHAccessTest extends \PHPUnit_Framework_TestCase {
         $this->patchClassMethod('Net_SSH2::Net_SSH2', function($host, $port, $timeout) use ($expectedHost, &$expectedMaxAttempts){
             $this->assertEquals($expectedHost, $host);
             $this->assertEquals(22, $port);
-            $this->assertEquals(0, $timeout);
+            $this->assertEquals(1, $timeout);
 
             if($expectedMaxAttempts > 1) {
                 --$expectedMaxAttempts;
                 throw new \Exception('Cannot connect to  ...');
             }
-
-        }, $expectedMaxAttempts);
-
+        });
 
         $this->patchClassMethod('Net_SSH2::login', function($user, $password) use ($self, &$expectedMaxAttempts){
             $this->assertEquals('root', $user);
@@ -42,6 +40,35 @@ class SSHAccessTest extends \PHPUnit_Framework_TestCase {
         ]);
 
         $access->connect($expectedHost);
+    }
+
+    public function testExec() {
+        $this->patchClassMethod('Net_SSH2::disconnect');
+        $this->patchClassMethod('Net_SSH2::Net_SSH2');
+        $this->patchClassMethod('Net_SSH2::login');
+
+        $constructorCalled = false;
+        $this->patchClassMethod('Net_SFTP::Net_SFTP', function($host, $port, $timeout) use (&$constructorCalled){
+            $this->assertEquals('test.somewhere.com', $host);
+            $this->assertEquals(22, $port);
+            $this->assertEquals(1, $timeout);
+            $constructorCalled = true;
+        });
+
+        $this->patchClassMethod('Net_SFTP::login', function($user, $password) use (&$expectedMaxAttempts, &$constructorCalled){
+            $this->assertTrue($constructorCalled);
+            $this->assertEquals('root', $user);
+            $this->assertEquals('test', $password);
+        }, 1);
+
+        $access = new SSHAccess();
+        $access->setCredentials([
+            'user' => 'root',
+            'password' => 'test'
+        ]);
+
+        $access->connect('test.somewhere.com');
+        $access->exec('date');
     }
 
     public function patchClassMethod($patchTarget, \Closure $patch=null, $expectedCallCount=null) {

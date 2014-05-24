@@ -9,6 +9,7 @@ class SSHAccess implements InstanceAccessInterface {
 
     protected $credentials;
     protected $conn;
+    protected $host;
 
     /**
      * {@inheritdoc}
@@ -25,9 +26,10 @@ class SSHAccess implements InstanceAccessInterface {
         $maxAttempts = $this->get('connect.attempts', 1);
         while($attempts < $maxAttempts) {
             try {
-                $conn = new \Net_SSH2($instanceHost, 22, 0);
+                $conn = new \Net_SSH2($instanceHost, 22, 1);
                 $conn->login($this->get('user'), $this->get('password'));
                 $this->conn = $conn;
+                $this->host = $instanceHost;
                 return true;
             } catch (\Exception $e) {
                 ++$attempts;
@@ -41,7 +43,12 @@ class SSHAccess implements InstanceAccessInterface {
      * {@inheritdoc}
      */
     public function exec($code) {
-        throw new \Exception('WTF');
+        if(!$this->conn) {
+            throw new \Exception('You are not connected to the server');
+        }
+
+        $conn = new \Net_SFTP($this->host, 22, 1);
+        $conn->login($this->get('user'), $this->get('password'));
     }
 
     public function get($path, $default = null, $deep = false) {
