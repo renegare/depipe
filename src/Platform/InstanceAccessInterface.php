@@ -26,5 +26,5 @@ interface InstanceAccessInterface {
      * @throws Exception - if execution fails
      * @return void
      */
-    public function exec($code, $callback);
+    public function exec($code, \Closure $callback = null);
 }

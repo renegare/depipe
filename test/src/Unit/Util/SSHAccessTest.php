@@ -92,6 +92,61 @@ class SSHAccessTest extends \PHPUnit_Framework_TestCase {
         $access->exec("#!/bin/bash\ndate", $mockCallback);
     }
 
+    public function testConnectWithSSHKey() {
+        $expectedHost = 'test.somewhere.com';
+
+        $this->patchClassMethod('Net_SSH2::disconnect');
+        $this->patchClassMethod('Net_SSH2::Net_SSH2');
+
+        $this->patchClassMethod('Net_SSH2::login', function($user, $password) use (&$expectedMaxAttempts){
+            $this->assertEquals('root', $user);
+            $this->assertInstanceof('Crypt_RSA', $password);
+        }, 1);
+
+        $this->patchClassMethod('Crypt_RSA::loadKey', function($key) {
+            $this->assertEquals('--key--123456--key--', $key);
+        }, 1);
+
+        $access = new SSHAccess();
+        $access->setCredentials([
+            'user' => 'root',
+            'key' => '--key--123456--key--',
+            'connect.sleep' => 5,
+        ]);
+
+        $access->connect($expectedHost);
+    }
+
+    public function testExecWithSSHKey() {
+        $expectedHost = 'test.somewhere.com';
+
+        $this->patchClassMethod('Net_SSH2::disconnect');
+        $this->patchClassMethod('Net_SSH2::Net_SSH2');
+        $this->patchClassMethod('Net_SSH2::login');
+        $this->patchClassMethod('Net_SFTP::Net_SFTP');
+        $this->patchClassMethod('Net_SFTP::put');
+        $this->patchClassMethod('Net_SFTP::chmod');
+        $this->patchClassMethod('Net_SSH2::exec');
+
+        $this->patchClassMethod('Crypt_RSA::loadKey', function($key) {
+            $this->assertEquals('--key--123456--key--', $key);
+        }, 2);
+
+        $this->patchClassMethod('Net_SFTP::login', function($user, $password) {
+            $this->assertEquals('root', $user);
+            $this->assertInstanceof('Crypt_RSA', $password);
+        }, 1);
+
+        $access = new SSHAccess();
+        $access->setCredentials([
+            'user' => 'root',
+            'key' => '--key--123456--key--'
+        ]);
+
+        $access->connect('test.somewhere.com');
+        $access->exec("#!/bin/bash\ndate");
+    }
+
     /**
      * Uses Patchwork\replace to override a class::method. Also uses PHPUnit_Mock* to
      * assert the method has been called. However it does not apply call assertion to

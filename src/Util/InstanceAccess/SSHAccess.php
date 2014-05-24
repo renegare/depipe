@@ -27,7 +27,7 @@ class SSHAccess implements InstanceAccessInterface {
         while($attempts < $maxAttempts) {
             try {
                 $conn = new \Net_SSH2($instanceHost, 22, 1);
-                $conn->login($this->get('user'), $this->get('password'));
+                $conn->login($this->get('user'), $this->getPassword());
                 $this->conn = $conn;
                 $this->host = $instanceHost;
                 return true;
@@ -36,22 +36,24 @@ class SSHAccess implements InstanceAccessInterface {
             }
         }
 
-        throw $e;
+        if(isset($e)) {
+            throw $e;
+        }
     }
 
     /**
      * {@inheritdoc}
      */
-    public function exec($code, $cb) {
+    public function exec($code, \Closure $callback = null) {
         if(!$this->conn) {
             throw new \Exception('You are not connected to the server');
         }
 
         $sftp = new \Net_SFTP($this->host, 22, 1);
-        $sftp->login($this->get('user'), $this->get('password'));
+        $sftp->login($this->get('user'), $this->getPassword());
         $sftp->put('/tmp/execute.sh', $code);
         $sftp->chmod(0550, '/tmp/execute.sh');
-        $this->conn->exec('/tmp/execute.sh', $cb);
+        $this->conn->exec('/tmp/execute.sh', $callback);
 
         $exitCode = $this->conn->getExitStatus();
     }
@@ -62,5 +64,15 @@ class SSHAccess implements InstanceAccessInterface {
      */
     public function get($path, $default = null, $deep = false) {
         return $this->credentials->get($path, $default, $deep);
+    }
+
+    public function getPassword() {
+        if(!($password = $this->get('password'))) {
+            $key = $this->get('key');
+            $password = new \Crypt_RSA();
+            $password->loadKey($key);
+        }
+
+        return $password;
     }
 }
