@@ -53,9 +53,13 @@ class SSHAccess implements InstanceAccessInterface {
         $sftp->chmod(0550, '/tmp/execute.sh');
         $this->conn->exec('/tmp/execute.sh', $cb);
 
-        // $exitCode = $ssh->getExitStatus();
+        $exitCode = $this->conn->getExitStatus();
     }
 
+    /**
+     * proxy for ParameterBag::get
+     * {@inheritdoc ParameterBag::get}
+     */
     public function get($path, $default = null, $deep = false) {
         return $this->credentials->get($path, $default, $deep);
     }

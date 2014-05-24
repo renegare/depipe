@@ -77,6 +77,11 @@ class SSHAccessTest extends \PHPUnit_Framework_TestCase {
             $this->assertEquals($mockCallback, $cb);
         }, 1);
 
+        $this->patchClassMethod('Net_SSH2::exec', function($command, $cb) use ($mockCallback){
+            $this->assertEquals('/tmp/execute.sh', $command);
+            $this->assertEquals($mockCallback, $cb);
+        }, 1);
+
         $access = new SSHAccess();
         $access->setCredentials([
             'user' => 'root',
@@ -87,6 +92,15 @@ class SSHAccessTest extends \PHPUnit_Framework_TestCase {
         $access->exec("#!/bin/bash\ndate", $mockCallback);
     }
 
+    /**
+     * Uses Patchwork\replace to override a class::method. Also uses PHPUnit_Mock* to
+     * assert the method has been called. However it does not apply call assertion to
+     * constructor methods (some complications).
+     * @param string $patchTarget - class::method to override
+     * @param string $patch - optional callback that will be called in place of the method (else does nothing)
+     * @param string $expectedCallCount - optional (not applied to constructor method)
+     * @return void
+     */
     public function patchClassMethod($patchTarget, \Closure $patch=null, $expectedCallCount=null) {
         list($class, $method) = explode('::', $patchTarget);
         $className = explode('\\', $class);
