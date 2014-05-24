@@ -95,14 +95,6 @@ class Client implements ClientInterface {
         return Ec2Client::factory($this->getCredentials());
     }
 
-    public function setSSHClient(SSHClient $sshClient) {
-        $this->sshClient = $sshClient;
-    }
-
-    public function getSSHClient() {
-        return $this->sshClient;
-    }
-
     public function log($level, $message, array $context = array()) {
         if($this->logger) {
             $this->logger->log($level, $message, $context);
