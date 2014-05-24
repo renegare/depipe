@@ -7,6 +7,10 @@ use Patchwork as P;
 
 class SSHAccessTest extends \PHPUnit_Framework_TestCase {
 
+    public function teardown() {
+        @P\undoAll();
+    }
+
     public function testConnect() {
         $self = $this;
         $expectedHost = 'test.somewhere.com';
