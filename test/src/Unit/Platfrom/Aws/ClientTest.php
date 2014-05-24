@@ -66,6 +66,8 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
     }
 
     public function testProvisionInstances() {
+        $this->markTestIncomplete('Revising expected logic here!');
+        
         $mockLocalScript = PROJECT_ROOT . '/test/resources/dummy_ssh.sh';
 
         $mockInstance = new Instance('i-122345', $this->getGuzzleModelResponse('aws/describe_instances_response')
@@ -77,7 +79,7 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
         $mockSSHClient->expects($this->any())
             ->method('connect')
             ->will($this->returnCallback(function($user, $host, $privateKey){
-                
+
             }));
 
         $mockSSHClient->expects($this->at(2))
@@ -95,8 +97,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
             }));
 
         $client = $this->getMockClient(['getEc2Client']);
-        $client->setSSHClient($mockSSHClient);
-
         $client->provisionInstances([$mockInstance], [$mockLocalScript]);
     }
 

@@ -26,7 +26,7 @@ class ConnectCommandTest extends ConsoleTestCase {
 
         $expectedConfig = [
             'instances' => $mockInstances,
-            'load_balancer' => 'load-balancer-identifier'
+            'load.balancer' => 'load-balancer-identifier'
         ];
 
         $app->setConfig($expectedConfig);
@@ -45,7 +45,7 @@ class ConnectCommandTest extends ConsoleTestCase {
         $mockClient->expects($this->once())
             ->method('convertToLoadBalancer')
             ->will($this->returnCallback(function($loadBalancerName) use ($expectedConfig, $mockLoadBalancer){
-                $this->assertEquals($expectedConfig['load_balancer'], $loadBalancerName);
+                $this->assertEquals($expectedConfig['load.balancer'], $loadBalancerName);
                 return $mockLoadBalancer;
             }));
         $app->setClient($mockClient);

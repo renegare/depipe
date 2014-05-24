@@ -16,8 +16,11 @@ class ConnectCommand extends \App\Command {
     protected function doExecute(InputInterface $input) {
 
         $client = $this->getClient();
-        $loadBalancer = $this->get('load_balancer');
-        $instances = $this->getSubCommandValue('launch', 'instances');
+        $loadBalancer = $this->getLoadBalancer();
+        $instances = $this->getInstances(function(){
+            $this->runSubCommand('launch');
+            return $this->getInstances();
+        });
 
         $client->connectInstancesToLoadBalancer($instances, $loadBalancer);
 
