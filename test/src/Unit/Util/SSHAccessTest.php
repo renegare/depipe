@@ -20,7 +20,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
 
             if($expectedMaxAttempts > 1) {
                 --$expectedMaxAttempts;
-                throw new \Exception('Cannot connect to  ...');
+                user_error('Cannot connect to  ...');
             }
         });
 

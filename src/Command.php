@@ -6,10 +6,10 @@ use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerTrait;
 use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LogLevel;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Command\Command as BaseCommand;
-use Psr\Log\LogLevel;
 use Symfony\Component\Console\Input\ArrayInput;
 
 abstract class Command extends BaseCommand implements LoggerAwareInterface, LoggerInterface {

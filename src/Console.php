@@ -128,11 +128,17 @@ class Console extends Application {
 
     public function setInstanceAccess(InstanceAccessInterface $instanceAccess) {
         $this->instanceAccess = $instanceAccess;
+        if($this->logger) {
+            $this->instanceAccess->setLogger($this->logger);
+        }
     }
 
     public function getInstanceAccess() {
         if(!$this->instanceAccess) {
             $this->instanceAccess = new SSHAccess();
+            if($this->logger) {
+                $this->instanceAccess->setLogger($this->logger);
+            }
         }
 
         $this->instanceAccess->setCredentials($this->getConfigValue('instance.access'));

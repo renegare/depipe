@@ -2,7 +2,10 @@
 
 namespace App\Platform;
 
-interface InstanceAccessInterface {
+use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareInterface;
+
+interface InstanceAccessInterface extends LoggerInterface, LoggerAwareInterface {
 
     /**
      * connect to a given host

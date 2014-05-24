@@ -40,7 +40,8 @@ class LaunchCommandTest extends ConsoleTestCase {
         ];
 
         $app->setConfig($expectedConfig);
-        $app->setInstanceAccess($this->getMock('App\Platform\InstanceAccessInterface'));
+        $abstractInstanceAccess = $this->getMock('App\Platform\InstanceAccessInterface');
+        $app->setInstanceAccess($abstractInstanceAccess);
 
         $mockInstance = $this->getMock('App\Platform\InstanceInterface');
         $mockInstance->expects($this->once())
