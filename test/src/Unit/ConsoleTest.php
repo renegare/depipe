@@ -5,13 +5,12 @@ namespace App\Test\Command;
 use App\Test\Util\ConsoleTestCase;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\Yaml\Dumper;
-use Patchwork as P;
 
 class ConsoleTest extends ConsoleTestCase {
 
     public function teardown() {
+        parent::teardown();
         @unlink('depipe-mock.yml');
-        P\undoAll();
     }
 
     /**
@@ -118,18 +117,18 @@ class ConsoleTest extends ConsoleTestCase {
 
     public function testGetClient() {
         $self = $this;
-        P\replace('App\Test\Util\Mock\PlatformClient::setCredentials', function($config) use ($self){
+        $this->patchClassMethod('App\Platform\Aws\Client::setCredentials', function($config) use ($self){
             $self->assertEquals([
                 'secret' => 'secret-123456',
-                'vendor' => 'App\Test\Util\Mock\PlatformClient'
+                'vendor' => 'App\Platform\Aws\Client'
             ], $config);
-        });
+        }, 1);
 
         $app = $this->getApplication();
         $app->setConfig([
             'credentials' => [
                 'secret' => 'secret-123456',
-                'vendor' => 'App\Test\Util\Mock\PlatformClient'
+                'vendor' => 'App\Platform\Aws\Client'
             ]
         ]);
 
@@ -139,13 +138,13 @@ class ConsoleTest extends ConsoleTestCase {
 
     public function testGetInstanceAccess() {
         $self = $this;
-        P\replace('App\Util\InstanceAccess\SSHAccess::setCredentials', function($config) use ($self){
+        $this->patchClassMethod('App\Util\InstanceAccess\SSHAccess::setCredentials', function($config) use ($self){
             $self->assertEquals([
                 'root' => 'secret-123456',
                 'password' => 'pw',
                 'private.key' => 'pk'
             ], $config);
-        });
+        }, 1);
 
         $app = $this->getApplication();
         $app->setConfig([

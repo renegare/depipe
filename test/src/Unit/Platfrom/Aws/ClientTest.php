@@ -7,7 +7,6 @@ use App\Platform\Aws\Image;
 use App\Platform\Aws\Instance;
 use Symfony\Component\Yaml\Dumper;
 use Guzzle\Service\Resource\Model as GuzzleModel;
-use Patchwork as P;
 
 class ClientTest extends \PHPUnit_Framework_TestCase {
 

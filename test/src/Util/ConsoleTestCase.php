@@ -6,8 +6,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Yaml\Dumper;
 
-abstract class ConsoleTestCase extends \PHPUnit_Framework_TestCase
-{
+abstract class ConsoleTestCase extends BaseTestCase {
 
     protected function getApplication() {
         ob_start();
