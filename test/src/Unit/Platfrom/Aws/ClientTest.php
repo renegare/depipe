@@ -7,6 +7,7 @@ use App\Platform\Aws\Image;
 use App\Platform\Aws\Instance;
 use Symfony\Component\Yaml\Dumper;
 use Guzzle\Service\Resource\Model as GuzzleModel;
+use Patchwork as P;
 
 class ClientTest extends \PHPUnit_Framework_TestCase {
 
@@ -63,41 +64,6 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertCount(1, $instances);
         $this->assertInstanceof('App\Platform\Aws\Instance', $instances[0]);
-    }
-
-    public function testProvisionInstances() {
-        $this->markTestIncomplete('Revising expected logic here!');
-        
-        $mockLocalScript = PROJECT_ROOT . '/test/resources/dummy_ssh.sh';
-
-        $mockInstance = new Instance('i-122345', $this->getGuzzleModelResponse('aws/describe_instances_response')
-            ->toArray()['Reservations'][0]['Instances'][0]);
-
-        $mockSSHClient = $this->getMockBuilder('App\Util\SSHClient')
-            ->getMock();
-
-        $mockSSHClient->expects($this->any())
-            ->method('connect')
-            ->will($this->returnCallback(function($user, $host, $privateKey){
-
-            }));
-
-        $mockSSHClient->expects($this->at(2))
-            ->method('connect')
-            ->will($this->returnCallback(function($user, $host, $privateKey){
-                $this->assertEquals('root', $user);
-                $this->assertNull($privateKey);
-                return true;
-            }));
-        $mockSSHClient->expects($this->once())
-            ->method('executeShellScript')
-            ->will($this->returnCallback(function($localPath) use ($mockLocalScript){
-                $this->assertEquals($mockLocalScript, $localPath);
-                return true;
-            }));
-
-        $client = $this->getMockClient(['getEc2Client']);
-        $client->provisionInstances([$mockInstance], [$mockLocalScript]);
     }
 
     public function testGetEc2Client() {

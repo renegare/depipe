@@ -5,8 +5,9 @@ namespace App\Platform;
 use App\Platform\InstanceInterface;
 use App\Platform\ImageInterface;
 use App\Platform\LoadBalancerInterface;
+use App\Platform\InstanceAccessInterface;
 use Psr\Log\LoggerInterface;
-use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareInterface;;
 
 interface ClientInterface extends LoggerAwareInterface, LoggerInterface {
 
@@ -70,20 +71,6 @@ interface ClientInterface extends LoggerAwareInterface, LoggerInterface {
      * @return array - of InstanceInterface(s)
      */
     public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], array $userDataConfig=[]);
-
-    /**
-     * attempts to login into the instances execute the shellscripts
-     * Note: this method is rather limited to linux machines and not so elegant
-     * handling of ssh private keys to get access ... so things may change in due
-     * time.
-     * @param array $instances - of InstanceInterface(s)
-     * @param array $shellScripts - of shell script file paths
-     * @param string $user - user to connect to the instances with
-     * @param string $privateKey - to use to authenticate with
-     * @throws Exception - from the platform / ssh client|connection
-     * @return void
-     */
-    public function provisionInstances(array $instances, array $shellScripts, $user = 'root', $privateKey = null);
 
     /**
      * Connects instances to a load balancer

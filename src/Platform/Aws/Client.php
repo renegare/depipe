@@ -6,6 +6,7 @@ use App\Platform\ClientInterface;
 use App\Platform\InstanceInterface;
 use App\Platform\ImageInterface;
 use App\Platform\LoadBalancerInterface;
+use App\Platform\InstanceAccessInterface;
 use Aws\Ec2\Ec2Client;
 use Symfony\Component\Yaml\Dumper;
 use App\Util\SSHClient;
@@ -84,16 +85,6 @@ class Client implements ClientInterface {
         $ec2Client->waitUntilInstanceRunning(array('InstanceIds' => $instanceIds));
 
         return $this->convertToInstances($instanceIds);
-    }
-
-    public function provisionInstances(array $instances, array $shellScripts, $user = 'root', $privateKey = null) {
-        $sshClient = $this->getSSHClient();
-        foreach($instances as $instance) {
-            $sshClient->connect($user, $instance->getHost(), $privateKey);
-            foreach($shellScripts as $script) {
-                $sshClient->executeShellScript($script);
-            }
-        }
     }
 
     public function connectInstancesToLoadBalancer(array $instances, LoadBalancerInterface $loadBalancer) {
