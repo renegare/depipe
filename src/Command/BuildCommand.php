@@ -16,7 +16,10 @@ class BuildCommand extends \App\Command {
     protected function doExecute(InputInterface $input) {
 
         $client = $this->getClient();
-        $instances = $this->getSubCommandValue('launch', 'instances');
+        $instances = $this->getInstances(function(){
+            $this->runSubCommand('launch');
+            return $this->getInstances();
+        });
         $imageName = $this->get('image_name');
 
         $image = $client->snapshotInstance($instances[0], $imageName);

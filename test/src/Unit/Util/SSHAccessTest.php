@@ -8,7 +8,7 @@ use Patchwork as P;
 class SSHAccessTest extends \PHPUnit_Framework_TestCase {
 
     public function teardown() {
-        @P\undoAll();
+        P\undoAll();
     }
 
     public function testConnect() {

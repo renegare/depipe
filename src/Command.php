@@ -94,9 +94,9 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface, Logg
     }
 
     protected function getSubCommandValue($subCommand, $key) {
-        return $this->get('instances', function(){
-            $this->runSubCommand('launch');
-            return $this->get('instances');
+        return $this->get($key, function() use ($subCommand, $key){
+            $this->runSubCommand($subCommand);
+            return $this->get($key);
         });
     }
 
@@ -108,8 +108,12 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface, Logg
         return $this->getApplication()->getInstanceAccess();
     }
 
-    protected function getImage() {
-        return $this->getApplication()->getImage();
+    protected function getImage($default=null) {
+        return $this->getApplication()->getImage($default);
+    }
+
+    protected function getInstances($default=null) {
+        return $this->getApplication()->getInstances($default);
     }
 
     abstract protected function doExecute(InputInterface $input);

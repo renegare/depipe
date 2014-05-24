@@ -34,17 +34,19 @@ class BuildCommandTest extends ConsoleTestCase {
         $app->setConfig($expectedConfig);
 
         $mockClient->expects($this->once())
+        ->method('convertToInstances')
+        ->will($this->returnCallback(function($instances) use ($expectedConfig, $mockInstances){
+            $this->assertEquals($expectedConfig['instances'], $instances);
+            return $mockInstances;
+        }));
+
+        $mockClient->expects($this->once())
             ->method('snapshotInstance')
             ->will($this->returnCallback(function($instance, $imageName) use ($mockImage, $mockInstances){
                 $this->assertEquals($mockInstances[0], $instance);
                 return $mockImage;
             }));
-        $mockClient->expects($this->once())
-            ->method('convertToInstances')
-            ->will($this->returnCallback(function($instances) use ($expectedConfig, $mockInstances){
-                $this->assertEquals($expectedConfig['instances'], $instances);
-                return $mockInstances;
-            }));
+
         $mockClient->expects($this->once())
             ->method('convertToImage')
             ->will($this->returnCallback(function($image) use ($mockImage){
@@ -56,7 +58,7 @@ class BuildCommandTest extends ConsoleTestCase {
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
-        $builtImage = $app->getConfigValue('image');
+        $builtImage = $app->getImage();
         $this->assertEquals($builtImage, $mockImage);
         $this->assertContains('Built image new-image', $commandTester->getDisplay());
     }
