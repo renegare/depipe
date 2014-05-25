@@ -27,10 +27,12 @@ class SSHAccess implements InstanceAccessInterface {
     public function connect($instanceHost) {
         $attempts = 0;
         $maxAttempts = $this->get('connect.attempts', 1);
+        $sleepSeconds = $this->get('connect.sleep');
         while($attempts < $maxAttempts) {
+            ++$attempts;
             try {
-                $this->info('SSH connecting ...');
-                $conn = new \Net_SSH2($instanceHost, 22, 1);
+                $this->info(sprintf('SSH connecting (attemtp %s)...', $attempts));
+                $conn = new \Net_SSH2($instanceHost, 22);
                 $conn->login($this->get('user'), $this->getPassword());
                 $this->conn = $conn;
                 $this->host = $instanceHost;
@@ -38,7 +40,8 @@ class SSHAccess implements InstanceAccessInterface {
                 return true;
             } catch (\Exception $e) {
                 $this->warning('SSH connection error: ' . $e->getMessage());
-                ++$attempts;
+                $this->info(sprintf('Will try again in %s seconds ...', $sleepSeconds));
+                sleep($sleepSeconds);
             }
         }
         $this->error('SSH connection failed ... giving up! :(');
@@ -56,7 +59,7 @@ class SSHAccess implements InstanceAccessInterface {
         }
 
         $this->info('Connecting to the instance via SFTP ...');
-        $sftp = new \Net_SFTP($this->host, 22, 1);
+        $sftp = new \Net_SFTP($this->host, 22);
         $sftp->login($this->get('user'), $this->getPassword());
 
         $this->info('Executing code ...');

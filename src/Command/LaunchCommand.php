@@ -22,7 +22,7 @@ class LaunchCommand extends \App\Command {
         $instanceCount = $this->get('instance.count');
         $scripts = $this->get('scripts');
         $instanceAccess = $this->getInstanceAccess();
-
+        
         $instances = $client->launchInstances($image, $instanceCount, $instanceConfig, $userDataConfig);
 
         foreach($instances as $instance) {

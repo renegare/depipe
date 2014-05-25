@@ -16,7 +16,6 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $this->patchClassMethod('Net_SSH2::Net_SSH2', function($host, $port, $timeout) use ($expectedHost, &$expectedMaxAttempts){
             $this->assertEquals($expectedHost, $host);
             $this->assertEquals(22, $port);
-            $this->assertEquals(1, $timeout);
 
             if($expectedMaxAttempts > 1) {
                 --$expectedMaxAttempts;
@@ -35,7 +34,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
             'user' => 'root',
             'password' => 'test',
             'connect.attempts' => $expectedMaxAttempts,
-            'connect.sleep' => 5,
+            'connect.sleep' => 0,
         ]);
 
         $access->connect($expectedHost);
@@ -50,7 +49,6 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $this->patchClassMethod('Net_SFTP::Net_SFTP', function($host, $port, $timeout) use (&$constructorCalled){
             $this->assertEquals('test.somewhere.com', $host);
             $this->assertEquals(22, $port);
-            $this->assertEquals(1, $timeout);
             $constructorCalled = true;
         });
 

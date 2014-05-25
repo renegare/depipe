@@ -78,10 +78,12 @@ class Client implements ClientInterface {
             $config['UserData'] = base64_encode("#cloud-config\n" . $yamlDumper->dump($userDataConfig));
         }
 
+        $this->info('Launching instances ...', ['request' => $config]);
         $ec2Client = $this->getEc2Client();
         $responses = $ec2Client->runInstances($config);
 
         $instanceIds = $responses->getPath('Instances/*/InstanceId');
+        $this->info('Waiting for instances to be ready ...', ['instance.ids' => $instanceIds]);
         $ec2Client->waitUntilInstanceRunning(array('InstanceIds' => $instanceIds));
 
         return $this->convertToInstances($instanceIds);
