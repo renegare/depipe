@@ -66,7 +66,7 @@ class SSHAccess implements InstanceAccessInterface {
         $sftp->put('/tmp/execute.sh', $code);
         $sftp->chmod(0550, '/tmp/execute.sh');
         $this->conn->exec('/tmp/execute.sh', function($output) {
-            $this->info(sprintf('@%s %s', $output));
+            $this->info(sprintf('[%s] %s', $this->host, $output));
         });
 
         $exitCode = $this->conn->getExitStatus();

@@ -44,10 +44,10 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $this->patchClassMethod('Net_SSH2::disconnect');
         $this->patchClassMethod('Net_SSH2::Net_SSH2');
         $this->patchClassMethod('Net_SSH2::login');
-
+        $mockHost = 'test.somewhere.com';
         $constructorCalled = false;
-        $this->patchClassMethod('Net_SFTP::Net_SFTP', function($host, $port, $timeout) use (&$constructorCalled){
-            $this->assertEquals('test.somewhere.com', $host);
+        $this->patchClassMethod('Net_SFTP::Net_SFTP', function($host, $port, $timeout) use (&$constructorCalled, $mockHost){
+            $this->assertEquals($mockHost, $host);
             $this->assertEquals(22, $port);
             $constructorCalled = true;
         });
@@ -68,16 +68,20 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
             $this->assertEquals(0550, $premissions);
         }, 1);
 
-        $mockCallback = function(){};
-        $this->patchClassMethod('Net_SSH2::exec', function($command, $cb) use ($mockCallback){
+        $isLogged = false;
+        $this->patchClassMethod('Net_SSH2::exec', function($command, $cb) use (&$isLogged){
             $this->assertEquals('/tmp/execute.sh', $command);
-            $this->assertEquals($mockCallback, $cb);
+            $this->assertInstanceOf('Closure', $cb);
+            $isLogged = true;
+            $cb('test-output');
+            $isLogged = false;
         }, 1);
 
-        $this->patchClassMethod('Net_SSH2::exec', function($command, $cb) use ($mockCallback){
-            $this->assertEquals('/tmp/execute.sh', $command);
-            $this->assertEquals($mockCallback, $cb);
-        }, 1);
+        $this->patchClassMethod('App\Util\InstanceAccess\SSHAccess::info', function($message) use ($mockHost, &$isLogged){
+            if($isLogged) {
+                $this->assertEquals("[$mockHost] test-output", $message);
+            }
+        });
 
         $access = new SSHAccess();
         $access->setCredentials([
@@ -85,8 +89,8 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
             'password' => 'test'
         ]);
 
-        $access->connect('test.somewhere.com');
-        $access->exec("#!/bin/bash\ndate", $mockCallback);
+        $access->connect($mockHost);
+        $access->exec("#!/bin/bash\ndate");
     }
 
     public function testConnectWithSSHKey() {
