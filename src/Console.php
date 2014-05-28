@@ -79,18 +79,47 @@ class Console extends Application {
         return parent::configureIO($input, $output);
     }
 
+    /**
+     * processing place holders in config using text replacement.
+     * @todo serious refactoring as it breaks every rule of DRY OOP.
+     * @param string $config
+     * @param string - hopefully valid yaml!
+     */
     protected function processPlaceHolders($config) {
-        return preg_replace_callback('/{{\s*(\w+)\s+([^}]+)}}/', function($matches) {
+
+        $config = preg_replace_callback('/[\'"]{{\s*(\w+)\s+([^}]+)}}[\'"]/', function($matches) {
             $source = $matches[1];
             $arg = trim($matches[2]);
 
             switch($source) {
                 case 'env':
                     return getenv($arg);
+                case 'file':
+                    $value = file_get_contents($arg);
+                    $value = '"' . preg_replace(['/([\n])/', '/(["])/'], ['\n', '\"'], $value) . '"';
+                    return $value;
                 default:
                     throw new \BadFunctionCallException('Invalid place holder ' . $source);
             }
         }, $config);
+
+        $config = preg_replace_callback('/{{\s*(\w+)\s+([^}]+)}}/', function($matches) {
+            $source = $matches[1];
+            $arg = trim($matches[2]);
+
+            switch($source) {
+                case 'env':
+                    return getenv($arg);
+                case 'file':
+                    $value = file_get_contents($arg);
+                    $value = '"' . preg_replace(['/([\n])/', '/(["])/'], ['\n', '\"'], $value) . '"';
+                    return $value;
+                default:
+                    throw new \BadFunctionCallException('Invalid place holder ' . $source);
+            }
+        }, $config);
+
+        return $config;
     }
 
     public function getPipeline() {

@@ -96,6 +96,35 @@ class ConsoleTest extends ConsoleTestCase {
     }
 
     /**
+     * test we can retrieve value for a param from a file
+     * (as in the whole contents of the file will be the value of the param)
+     */
+    public function testParamsFromFilePlaceholder() {
+        @unlink('depipe-mock.yml');
+
+        $time = time();
+        putenv(sprintf('DEPIPE_TEST_ENV=%s', $time));
+
+        $dumper = new Dumper();
+        file_put_contents('depipe-mock.yml', $dumper->dump([
+            'parameters' =>[
+                'string' => '{{file demo-script.sh }}']]));
+
+        $app = $this->getApplication();
+        $app->setAutoExit(false);
+
+        $appTester = new ApplicationTester($app);
+        $appTester->run([
+            '--config' => 'depipe-mock.yml'
+        ]);
+
+        $this->assertEquals(['string' => file_get_contents('demo-script.sh')], $app->getConfig());
+
+        @unlink('depipe-mock.yml');
+        putenv('DEPIPE_TEST_ENV');
+    }
+
+    /**
      * @expectedException BadFunctionCallException
      */
     public function testInvalidPlaceholder() {
