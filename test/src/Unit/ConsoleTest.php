@@ -187,4 +187,26 @@ class ConsoleTest extends ConsoleTestCase {
         $access = $app->getInstanceAccess();
         $this->assertInstanceOf('App\Platform\InstanceAccessInterface', $access);
     }
+
+    /**
+     * assert pipeline param in config is accessible via getPipeLine
+     */
+    public function testGetPipeLine() {
+        @unlink('depipe-mock.yml');
+        $dumper = new Dumper();
+        file_put_contents('depipe-mock.yml', $dumper->dump([
+            'pipeline' =>[
+                'base-ami' => 'ami-test']]));
+
+        $app = $this->getApplication();
+        $app->setAutoExit(false);
+
+        $appTester = new ApplicationTester($app);
+        $appTester->run([
+            '--config' => 'depipe-mock.yml'
+        ]);
+
+        $this->assertEquals(['base-ami' => 'ami-test'], $app->getPipeLine());
+        @unlink('depipe-mock.yml');
+    }
 }

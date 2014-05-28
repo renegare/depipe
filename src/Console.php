@@ -20,6 +20,7 @@ class Console extends Application {
     protected $logger;
     protected $client;
     protected $instanceAccess;
+    protected $pipeline = [];
 
     public function setConfig(array $config) {
         $this->config = $config;
@@ -85,7 +86,9 @@ class Console extends Application {
             $config = $this->processPlaceHolders(file_get_contents($configPath));
             $config = $yaml->parse($config);
             $params = isset($config['parameters'])? $config['parameters'] : [];
+            $pipeline = isset($config['pipeline'])? $config['pipeline'] : [];
             $this->setConfig($params);
+            $this->setPipeLine($pipeline);
 
             chdir($cwd);
         }
