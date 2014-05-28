@@ -108,7 +108,7 @@ class ConsoleTest extends ConsoleTestCase {
         $dumper = new Dumper();
         file_put_contents('depipe-mock.yml', $dumper->dump([
             'parameters' =>[
-                'string' => '{{file demo-script.sh }}']]));
+                'string' => '{{file build.sh }}']]));
 
         $app = $this->getApplication();
         $app->setAutoExit(false);
@@ -118,7 +118,7 @@ class ConsoleTest extends ConsoleTestCase {
             '--config' => 'depipe-mock.yml'
         ]);
 
-        $this->assertEquals(['string' => file_get_contents('demo-script.sh')], $app->getConfig());
+        $this->assertEquals(['string' => file_get_contents('build.sh')], $app->getConfig());
 
         @unlink('depipe-mock.yml');
         putenv('DEPIPE_TEST_ENV');

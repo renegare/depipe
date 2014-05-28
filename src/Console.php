@@ -55,6 +55,11 @@ class Console extends Application {
 
         if($input->hasParameterOption(['--log', '-l']) && $command instanceof \App\Command) {
             $logPath = $input->getParameterOption(['--log', '-l']);
+            $logDir = realpath(dirname($logPath));
+
+            if(!$logDir) {
+                throw new \InvalidArgumentException(sprintf('Log folder does not exist! %s', $logDir));
+            }
 
             $log = new Logger('depipe');
             $log->pushHandler(new StreamHandler($logPath));
@@ -68,12 +73,21 @@ class Console extends Application {
     protected function configureIO(InputInterface $input, OutputInterface $output) {
 
         if($input->hasParameterOption(['--config', '-c'])) {
-            $configPath = $input->getParameterOption(['--config', '-c']);
+            $configPath = realpath($input->getParameterOption(['--config', '-c']));
+            if(!$configPath) {
+                throw new \InvalidArgumentException(sprintf('Config file does not exists! %s', $configPath));
+            }
+            $cwd = getcwd();
+
+            chdir(dirname($configPath));
+
             $yaml = new Parser();
             $config = $this->processPlaceHolders(file_get_contents($configPath));
             $config = $yaml->parse($config);
             $params = isset($config['parameters'])? $config['parameters'] : [];
             $this->setConfig($params);
+
+            chdir($cwd);
         }
 
         return parent::configureIO($input, $output);
@@ -87,23 +101,7 @@ class Console extends Application {
      */
     protected function processPlaceHolders($config) {
 
-        $config = preg_replace_callback('/[\'"]{{\s*(\w+)\s+([^}]+)}}[\'"]/', function($matches) {
-            $source = $matches[1];
-            $arg = trim($matches[2]);
-
-            switch($source) {
-                case 'env':
-                    return getenv($arg);
-                case 'file':
-                    $value = file_get_contents($arg);
-                    $value = '"' . preg_replace(['/([\n])/', '/(["])/'], ['\n', '\"'], $value) . '"';
-                    return $value;
-                default:
-                    throw new \BadFunctionCallException('Invalid place holder ' . $source);
-            }
-        }, $config);
-
-        $config = preg_replace_callback('/{{\s*(\w+)\s+([^}]+)}}/', function($matches) {
+        $config = preg_replace_callback(['/[\'"]{{\s*(\w+)\s+([^}]+)}}[\'"]/','/{{\s*(\w+)\s+([^}]+)}}/'], function($matches) {
             $source = $matches[1];
             $arg = trim($matches[2]);
 
