@@ -29,7 +29,7 @@ class BuildCommandTest extends ConsoleTestCase {
 
         $expectedConfig = [
             'instances' => ['i-123456', 'i-098765'],
-            'image_name' => 'new-image'
+            'image.name' => 'new-image'
         ];
         $app->setConfig($expectedConfig);
 
@@ -85,7 +85,7 @@ class BuildCommandTest extends ConsoleTestCase {
         $app->add($mockLaunchCommand);
 
         $expectedConfig = [
-            'image_name' => 'new-image'
+            'image.name' => 'new-image'
         ];
         $app->setConfig($expectedConfig);
 

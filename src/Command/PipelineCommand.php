@@ -31,7 +31,7 @@ class PipelineCommand extends \App\Command{
             $this->configHistory[$pipeName] = $app->getConfig();
         }
 
-        $this->info('Pipeline completed', ['config' => $config]);
+        $this->info('Pipeline completed');
     }
 
     protected function processConfig(array $config) {

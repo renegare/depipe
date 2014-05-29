@@ -20,7 +20,7 @@ class BuildCommand extends \App\Command {
             $this->runSubCommand('launch');
             return $this->getInstances();
         });
-        $imageName = $this->get('image_name');
+        $imageName = $this->get('image.name');
 
         $image = $client->snapshotInstance($instances[0], $imageName);
         $this->set('image', $image);
