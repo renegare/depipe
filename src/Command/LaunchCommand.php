@@ -17,12 +17,12 @@ class LaunchCommand extends \App\Command {
 
         $client = $this->getClient();
         $image = $this->getImage();
-        $userDataConfig = $this->get('userdata.config');
-        $instanceConfig = $this->get('instance.config');
-        $instanceCount = $this->get('instance.count');
-        $scripts = $this->get('scripts');
+        $userDataConfig = $this->get('userdata.config', []);
+        $instanceConfig = $this->get('instance.config', []);
+        $instanceCount = $this->get('instance.count', 1);
+        $scripts = $this->get('scripts', []);
         $instanceAccess = $this->getInstanceAccess();
-        
+
         $instances = $client->launchInstances($image, $instanceCount, $instanceConfig, $userDataConfig);
 
         foreach($instances as $instance) {

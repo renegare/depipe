@@ -18,7 +18,7 @@ class BuildCommand extends \App\Command {
         $client = $this->getClient();
         $cleanUpInstances = false;
         $instances = $this->getInstances(function() use (&$cleanUpInstances){
-            $this->info('There are pre-specified instances. Launching an instance to build from ...');
+            $this->info('There are NO pre-specified instances. Launching an instance to build from ...');
             $this->runSubCommand('launch');
             $cleanUpInstances = true;
             return $this->getInstances();

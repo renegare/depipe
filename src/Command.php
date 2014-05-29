@@ -76,7 +76,7 @@ abstract class Command extends BaseCommand implements LoggerAwareInterface, Logg
     }
 
     protected function runSubCommand($name) {
-        $this->info('running subcommand: ' . $name);
+        $this->debug('Running subcommand: ' . $name);
         $command = $this->getApplication()
             ->find($name);
         $input = new ArrayInput(['command' => $name]);
