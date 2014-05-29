@@ -145,6 +145,25 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
         $this->assertSame($mockImage, $client->snapShotInstance($mockInstance, 'web.app'));
     }
 
+    public function testKillInstances() {
+
+        $this->patchClassMethod('App\Platform\Aws\Client::getEc2Client', function(){
+            $client = $this->getMockEc2Client(['terminateInstances']);
+            $client->expects($this->once())
+                ->method('terminateInstances')
+                ->will($this->returnCallback(function($config) {
+                    $this->assertEquals([
+                        'InstanceIds' => ['i-12223']], $config);
+                    return $this->getGuzzleModelResponse('aws/null_response');
+                }));
+            return $client;
+        }, 1);
+
+        $mockInstance = new Instance('i-12223', []);
+        $client = new Client();
+        $client->killInstances([$mockInstance]);
+    }
+
     public function getGuzzleModelResponse($fileKey) {
         return new GuzzleModel(
             json_decode(

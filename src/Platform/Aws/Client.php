@@ -27,7 +27,7 @@ class Client implements ClientInterface {
     }
 
     public function convertToImage($imageId) {
-        $this->debug(sprintf('Requesting describeImages of: %s', $imageId));
+        $this->info(sprintf('Requesting describeImages of: %s', $imageId));
         $response = $this->getEc2Client()
             ->describeImages([
                 'ImageIds' => [$imageId]
@@ -39,7 +39,7 @@ class Client implements ClientInterface {
     }
 
     public function convertToInstances(array $instances) {
-        $this->debug(sprintf('Requesting describeInstances of: %s', implode(', ', $instances)));
+        $this->info(sprintf('Requesting describeInstances of: %s', implode(', ', $instances)));
 
         $response = $this->getEc2Client()
             ->describeInstances([
@@ -111,6 +111,13 @@ class Client implements ClientInterface {
      * {@inheritdoc}
      */
     public function killInstances(array $instances) {
-        throw new \Exception('Not Implemented');
+        $this->debug(sprintf('Requesting terminateInstances of: %s', implode(', ', $instances)));
+        $response = $this->getEc2Client()
+            ->terminateInstances([
+                'InstanceIds' => array_map(function($instance){
+                    return (string) $instance;
+                }, $instances)
+            ]);
+        $this->debug('Got response of terminateInstances', ['response' => $response->toArray()]);
     }
 }
