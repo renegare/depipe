@@ -30,10 +30,16 @@ class Client implements ClientInterface {
     public function convertToImage($imageId) {
         $this->info(sprintf('Requesting describeImages of: %s', $imageId));
         $client = $this->getEc2Client();
-        $imageState = null;
-        while(ImageState::AVAILABLE !== $imageState[0]) {
+        $imageNotReady = true;
+        while($imageNotReady) {
             $response = $client->describeImages(['ImageIds' => [$imageId]]);
-            $imageState = $response->getPath('Images/*/State');
+            $imageState = $response->getPath('Images/*/State')[0];
+            $imageNotReady = ImageState::AVAILABLE !== $imageState;
+            if($imageNotReady) {
+                $this->info('Image state is not yet available ...', [
+                    'state' => $imageState
+                ]);
+            }
         }
 
         $this->debug('Got response of describeImages', ['response' => $response->toArray()]);
