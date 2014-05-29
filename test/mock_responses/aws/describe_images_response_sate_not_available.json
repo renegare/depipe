@@ -1,0 +1,38 @@
+{
+    "requestId": "9a9a9a9-9c9c-9090-a099-9090909090909",
+    "Images": [
+        {
+            "ImageId": "ami-123456",
+            "ImageLocation": "9090909090909\/centos_v65_x64_ebs_cloudinit",
+            "State": "_NOT_AVAILABLE_",
+            "OwnerId": "9090909090909",
+            "Public": true,
+            "ProductCodes": [
+                {
+                    "ProductCodeId": "9a9a9a9-9c9c-9090-a099-9090909090909",
+                    "ProductCodeType": "marketplace"
+                }
+            ],
+            "Architecture": "x86_64",
+            "ImageType": "machine",
+            "KernelId": "aki-123456",
+            "Name": "aws_linux",
+            "Description": "Amazon Image",
+            "RootDeviceType": "ebs",
+            "RootDeviceName": "\/dev\/sda1",
+            "BlockDeviceMappings": [
+                {
+                    "DeviceName": "\/dev\/sda",
+                    "Ebs": {
+                        "SnapshotId": "snap-1223343",
+                        "VolumeSize": "10",
+                        "DeleteOnTermination": true,
+                        "VolumeType": "standard"
+                    }
+                }
+            ],
+            "VirtualizationType": "paravirtual",
+            "Hypervisor": "xen"
+        }
+    ]
+}

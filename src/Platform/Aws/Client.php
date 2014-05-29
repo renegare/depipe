@@ -12,6 +12,7 @@ use Symfony\Component\Yaml\Dumper;
 use App\Util\SSHClient;
 use Psr\Log\LoggerTrait;
 use Psr\Log\LoggerAwareTrait;
+use Aws\Ec2\Enum\ImageState;
 
 class Client implements ClientInterface {
     use LoggerTrait, LoggerAwareTrait;
@@ -28,10 +29,12 @@ class Client implements ClientInterface {
 
     public function convertToImage($imageId) {
         $this->info(sprintf('Requesting describeImages of: %s', $imageId));
-        $response = $this->getEc2Client()
-            ->describeImages([
-                'ImageIds' => [$imageId]
-            ]);
+        $client = $this->getEc2Client();
+        $imageState = null;
+        while(ImageState::AVAILABLE !== $imageState[0]) {
+            $response = $client->describeImages(['ImageIds' => [$imageId]]);
+            $imageState = $response->getPath('Images/*/State');
+        }
 
         $this->debug('Got response of describeImages', ['response' => $response->toArray()]);
 

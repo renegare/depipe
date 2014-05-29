@@ -96,17 +96,22 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
     }
 
     public function testConvertToImage() {
-        $response = $this->getGuzzleModelResponse('aws/describe_images_response');
-
+        $callCount = 0;
         $mockEc2Client = $this->getMockEc2Client(['describeImages']);
-        $mockEc2Client->expects($this->once())
+        $mockEc2Client->expects($this->exactly(4))
             ->method('describeImages')
-            ->will($this->returnCallback(function($request) use ($response){
+            ->will($this->returnCallback(function($request) use (&$callCount){
                 $this->assertEquals([
                     'ImageIds' => ['ami-123456']
                 ], $request);
 
-                return $response;
+                ++$callCount;
+
+                if($callCount < 4) {
+                    return $this->getGuzzleModelResponse('aws/describe_images_response_sate_not_available');
+                } else {
+                    return $this->getGuzzleModelResponse('aws/describe_images_response');
+                }
             }));
 
         $client = $this->getMockClient(['getEc2Client']);
