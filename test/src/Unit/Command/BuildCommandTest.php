@@ -43,7 +43,8 @@ class BuildCommandTest extends ConsoleTestCase {
         $mockClient->expects($this->once())
             ->method('snapshotInstance')
             ->will($this->returnCallback(function($instance, $imageName) use ($mockImage, $mockInstances){
-                $this->assertEquals($mockInstances[0], $instance);
+                $this->assertSame($mockInstances[0], $instance);
+                $this->assertNotSame($mockInstances[1], $instance);
                 return $mockImage;
             }));
 

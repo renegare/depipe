@@ -8,7 +8,7 @@ use App\Platform\Aws\Instance;
 use Symfony\Component\Yaml\Dumper;
 use Guzzle\Service\Resource\Model as GuzzleModel;
 
-class ClientTest extends \PHPUnit_Framework_TestCase {
+class ClientTest extends \App\Test\Util\BaseTestCase {
 
     public function testLaunchInstances() {
 
@@ -117,6 +117,32 @@ class ClientTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertInstanceof('App\Platform\Aws\Image', $image);
         $this->assertEquals('ami-123456', $image->getId());
+    }
+
+    public function testSnapshotInstance() {
+
+        $this->patchClassMethod('App\Platform\Aws\Client::getEc2Client', function(){
+            $client = $this->getMockEc2Client(['createImage']);
+            $client->expects($this->once())
+                ->method('createImage')
+                ->will($this->returnCallback(function($config) {
+                    $this->assertEquals([
+                        'InstanceId' => 'i-12223',
+                        'Name' => 'web.app'], $config);
+                    return $this->getGuzzleModelResponse('aws/create_image_response');
+                }));
+            return $client;
+        }, 1);
+
+        $mockImage = new Image('ami-999999', []);
+        $this->patchClassMethod('App\Platform\Aws\Client::convertToImage', function($imageId) use ($mockImage){
+            $this->assertEquals('ami-999999', $imageId);
+            return $mockImage;
+        }, 1);
+
+        $mockInstance = new Instance('i-12223', []);
+        $client = new Client();
+        $this->assertSame($mockImage, $client->snapShotInstance($mockInstance, 'web.app'));
     }
 
     public function getGuzzleModelResponse($fileKey) {

@@ -63,7 +63,12 @@ class Client implements ClientInterface {
     }
 
     public function snapshotInstance(InstanceInterface $instance, $imageName='') {
-        throw new \Exception('Not Implemented');
+        $client = $this->getEc2Client();
+        $this->info(sprintf('Creating a snapshot (%s) from instance %s', $imageName, $instance));
+        $imageId = $client->createImage([
+            'InstanceId' => (string) $instance,
+            'Name' => $imageName])->getPath('ImageId');
+        return $this->convertToImage($imageId);
     }
 
     public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], array $userDataConfig=[]) {
