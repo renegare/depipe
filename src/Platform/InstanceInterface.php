@@ -15,4 +15,10 @@ interface InstanceInterface {
      * @return App\Platform\RemoteInstanceException
      */
     public function provisionWith(InstanceAccessInterface $access, array $scripts);
+
+    /**
+     * return a string identifier for this object
+     * @return string
+     */
+    public function __toString();
 }

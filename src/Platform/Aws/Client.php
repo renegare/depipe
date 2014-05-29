@@ -106,4 +106,11 @@ class Client implements ClientInterface {
             $this->logger->log($level, $message, $context);
         }
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function killInstances(array $instances) {
+        throw new \Exception('Not Implemented');
+    }
 }

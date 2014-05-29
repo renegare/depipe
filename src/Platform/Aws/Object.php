@@ -21,6 +21,9 @@ abstract class Object {
         return $this->description;
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function __toString() {
         return $this->id;
     }

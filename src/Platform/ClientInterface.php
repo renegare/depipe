@@ -80,4 +80,12 @@ interface ClientInterface extends LoggerAwareInterface, LoggerInterface {
      * @return void
      */
     public function connectInstancesToLoadBalancer(array $instances, LoadBalancerInterface $loadBalancer);
+
+    /**
+     * Kill/Terminate given running instances
+     * @param array - of InstanceInterface(s)
+     * @throws Exception - from the platform
+     * @return void
+     */
+    public function killInstances(array $instances);
 }

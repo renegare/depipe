@@ -48,6 +48,9 @@ class BuildCommandTest extends ConsoleTestCase {
                 return $mockImage;
             }));
 
+        $mockClient->expects($this->never())
+            ->method('killInstances');
+
         $mockClient->expects($this->once())
             ->method('convertToImage')
             ->will($this->returnCallback(function($image) use ($mockImage){
@@ -99,6 +102,12 @@ class BuildCommandTest extends ConsoleTestCase {
         $mockClient->expects($this->any())
             ->method('convertToInstances')
             ->will($this->returnCallback(function($instances) use ($expectedConfig, $mockInstances){
+                $this->assertEquals($mockInstances, $instances);
+                return $mockInstances;
+            }));
+        $mockClient->expects($this->once())
+            ->method('killInstances')
+            ->will($this->returnCallback(function($instances) use ($mockInstances){
                 $this->assertEquals($mockInstances, $instances);
                 return $mockInstances;
             }));
