@@ -42,7 +42,7 @@ class Client implements ClientInterface {
     }
 
     public function convertToInstances(array $instances) {
-        $this->info(sprintf('Requesting describeInstances of: %s', implode(', ', $instances)));
+        $this->info(sprintf('Requesting describeInstances of: %s ...', implode(', ', $instances)));
 
         $response = $this->getEc2Client()
             ->describeInstances([

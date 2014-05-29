@@ -32,6 +32,7 @@ class BuildCommand extends \App\Command {
         if($cleanUpInstances) {
             $this->info(sprintf('Cleaning up instances: %s', implode(', ', $instances)));
             $client->killInstances($instances);
+            $this->set('instances', null);
         }
     }
 }

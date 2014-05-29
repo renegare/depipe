@@ -62,6 +62,9 @@ class BuildCommandTest extends ConsoleTestCase {
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
 
+        $config = $app->getConfig();
+        $this->assertEquals($config['instances'], $expectedConfig['instances']);
+
         $builtImage = $app->getImage();
         $this->assertEquals($builtImage, $mockImage);
         $this->assertContains('Built image new-image', $commandTester->getDisplay());
@@ -117,6 +120,7 @@ class BuildCommandTest extends ConsoleTestCase {
         $commandTester->execute(['command' => $command->getName()]);
 
         $config = $app->getConfig();
+        $this->assertNull($config['instances']);
         $this->assertEquals($config['image'], $mockImage);
         $this->assertContains('Built image new-image', $commandTester->getDisplay());
 
