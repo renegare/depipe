@@ -83,8 +83,13 @@ class Console extends Application {
             chdir(dirname($configPath));
 
             $yaml = new Parser();
-            $config = $this->processPlaceHolders(file_get_contents($configPath));
+            $config = file_get_contents($configPath);
             $config = $yaml->parse($config);
+
+            array_walk_recursive($config, function(&$item, $key){
+                $item = $this->processPlaceHolder($item);
+            });
+
             $params = isset($config['parameters'])? $config['parameters'] : [];
             $pipeline = isset($config['pipeline'])? $config['pipeline'] : [];
             $this->setConfig($params);
@@ -102,25 +107,43 @@ class Console extends Application {
      * @param string $config
      * @param string - hopefully valid yaml!
      */
-    protected function processPlaceHolders($config) {
+    public function processPlaceHolders($config) {
 
-        $config = preg_replace_callback(['/[\'"]{{\s*(\w+)\s+([^}]+)}}[\'"]/','/{{\s*(\w+)\s+([^}]+)}}/'], function($matches) {
-            $source = $matches[1];
-            $arg = trim($matches[2]);
+        $config = preg_replace_callback('/[\'"]{{\s*(\w+)\s+([^}]+)}}[\'"]/', [$this, 'processPlaceHolder'], $config);
 
-            switch($source) {
-                case 'env':
-                    return getenv($arg);
-                case 'file':
-                    $value = file_get_contents($arg);
-                    $value = '"' . preg_replace(['/([\n])/', '/(["])/'], ['\n', '\"'], $value) . '"';
-                    return $value;
-                default:
-                    throw new \BadFunctionCallException('Invalid place holder ' . $source);
-            }
-        }, $config);
+        $config = preg_replace_callback('/{{\s*(\w+)\s+([^}]+)}}/', [$this, 'processPlaceHolder'], $config);
 
         return $config;
+    }
+
+    public function processPlaceHolder($value) {
+        $pattern = '/{{\s*(\w+)(:?\s+([^}]+))?}}/';
+        $count = preg_match_all($pattern, $value);
+
+        if($count < 1) {
+            return $value;
+        }
+
+        if($count > 1) {
+            throw new \RuntimeException(sprintf("You can only have one placeholder per param: '%s'", $value));
+        }
+
+        preg_match($pattern, $value, $matches);
+
+        $source = $matches[1];
+        $arg = isset($matches[2])? trim($matches[2]) : null;
+
+        switch($source) {
+            case 'env':
+                return preg_replace($pattern, getenv($arg), $value);
+            case 'file':
+                $arg = preg_replace('/\$/', '\\\$', file_get_contents($arg));
+                return preg_replace($pattern, $arg, $value);
+            case 'time':
+                return preg_replace($pattern, $arg ? date($arg) : time(), $value);
+            default:
+                throw new \BadFunctionCallException('Invalid place holder ' . $source);
+        }
     }
 
     public function getPipeline() {

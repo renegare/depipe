@@ -24,7 +24,7 @@ class PipelineCommand extends \App\Command{
             list($match, $commandName, $description) = $match;
 
             $config = $this->processConfig($config);
-            $this->info(sprintf('Running pipe \'%s\' (%s command) ...', $description, $commandName));
+            $this->info(sprintf('Running pipe \'%s\' ...', $pipeName));
 
             $app->appendConfig($config);
             $this->runSubCommand($commandName);

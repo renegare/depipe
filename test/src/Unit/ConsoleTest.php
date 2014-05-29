@@ -96,19 +96,23 @@ class ConsoleTest extends ConsoleTestCase {
     }
 
     /**
-     * test we can retrieve value for a param from a file
-     * (as in the whole contents of the file will be the value of the param)
+     * test we can retrieve parans from the evironment
      */
-    public function testParamsFromFilePlaceholder() {
+    public function testParamsFromTimePlaceholder() {
         @unlink('depipe-mock.yml');
-
         $time = time();
         putenv(sprintf('DEPIPE_TEST_ENV=%s', $time));
 
         $dumper = new Dumper();
         file_put_contents('depipe-mock.yml', $dumper->dump([
             'parameters' =>[
-                'string' => '{{file build.sh }}']]));
+                'string' => '{{time}}',
+                'string2' => '{{time Ymd}}',
+                'string3' => 'image.name.{{time}}',
+                'array' => [
+                    '{{time}}',
+                    '{{time Ymd}}',
+                    'image.name.{{time Ymd}}']]]));
 
         $app = $this->getApplication();
         $app->setAutoExit(false);
@@ -118,7 +122,49 @@ class ConsoleTest extends ConsoleTestCase {
             '--config' => 'depipe-mock.yml'
         ]);
 
-        $this->assertEquals(['string' => file_get_contents('build.sh')], $app->getConfig());
+        $time = time();
+        $formattedTime = date('Ymd');
+        $this->assertEquals([
+            'string' => $time,
+            'string2' => $formattedTime,
+            'string3' => 'image.name.'.$time,
+            'array' => [
+                $time,
+                $formattedTime,
+                'image.name.'.$formattedTime]], $app->getConfig());
+
+        @unlink('depipe-mock.yml');
+        putenv('DEPIPE_TEST_ENV');
+    }
+
+    /**
+     * test we can retrieve value for a param from a file
+     * (as in the whole contents of the file will be the value of the param)
+     */
+    public function testParamsFromFilePlaceholder() {
+        @unlink('depipe-mock.yml');
+
+        $app = $this->getApplication();
+        $app->setAutoExit(false);
+        $appTester = new ApplicationTester($app);
+
+        $time = time();
+        $dumper = new Dumper();
+
+        file_put_contents('depipe-mock.yml', $dumper->dump([
+            'parameters' =>[
+                'string' => '{{file build.sh }}',
+                'embedded_string' => 'echo "{{file build.sh }}" > /tmp/build.sh',
+                'array' => ['{{file build.sh }}', 'echo "{{file build.sh }}" > /tmp/build.sh']]]));
+        $appTester->run([
+            '--config' => 'depipe-mock.yml'
+        ]);
+        $fileContents = file_get_contents('build.sh');
+        $this->assertEquals([
+            'string' => $fileContents,
+            'embedded_string' => 'echo "' . $fileContents . '" > /tmp/build.sh',
+            'array' => [$fileContents, 'echo "' . $fileContents . '" > /tmp/build.sh']
+        ], $app->getConfig());
 
         @unlink('depipe-mock.yml');
         putenv('DEPIPE_TEST_ENV');

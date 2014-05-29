@@ -27,10 +27,13 @@ class Client implements ClientInterface {
     }
 
     public function convertToImage($imageId) {
+        $this->debug(sprintf('Requesting describeImages of: %s', $imageId));
         $response = $this->getEc2Client()
             ->describeImages([
                 'ImageIds' => [$imageId]
             ]);
+
+        $this->debug('Got response of describeImages', ['response' => $response->toArray()]);
 
         return new Image($imageId, $response->getPath('Images/0'));
     }
@@ -43,14 +46,10 @@ class Client implements ClientInterface {
                 'InstanceIds' => $instances
             ]);
 
-        $responseData = $response->toArray();
-
-        $this->debug('Got response of describeInstances', [
-            'response' => $responseData
-        ]);
+        $this->debug('Got response of describeInstances', ['response' => $response->toArray()]);
 
         $instanceObjects = [];
-    $instanceDescriptions = $response->getPath('Reservations/*/Instances');
+        $instanceDescriptions = $response->getPath('Reservations/*/Instances');
         foreach($instanceDescriptions as $k => $instanceDescription) {
             $instanceObjects[] = new Instance($instanceDescription['InstanceId'], $instanceDescription);
         }
