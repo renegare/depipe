@@ -12,6 +12,7 @@ use Monolog\Handler\StreamHandler;
 use Symfony\Component\Yaml\Parser;
 use App\Platform\ClientInterface;
 use App\Platform\InstanceAccessInterface;
+use App\Platform\ImageInterface;
 use App\Util\InstanceAccess\SSHAccess;
 
 class Console extends Application {
@@ -199,8 +200,12 @@ class Console extends Application {
     }
 
     public function getImage($default=null) {
-        return $this->getClient()
-            ->convertToImage($this->getConfigValue('image', $default));
+        $image = $this->getConfigValue('image', $default);
+        if(!($image instanceof ImageInterface)) {
+            $image = $this->getClient()
+                ->convertToImage($image);
+        }
+        return $image;
     }
 
     public function getInstances($default=null) {

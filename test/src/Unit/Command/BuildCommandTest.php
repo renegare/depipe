@@ -51,13 +51,12 @@ class BuildCommandTest extends ConsoleTestCase {
         $mockClient->expects($this->never())
             ->method('killInstances');
 
-        $mockClient->expects($this->once())
-            ->method('convertToImage')
-            ->will($this->returnCallback(function($image) use ($mockImage){
-                $this->assertEquals($mockImage, $image);
-                return $mockImage;
-            }));
         $app->setClient($mockClient);
+
+        $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
+        $mockLaunchCommand->expects($this->once())->method('doExecute');
+        $mockLaunchCommand->setName('find:image');
+        $app->add($mockLaunchCommand);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
@@ -123,6 +122,37 @@ class BuildCommandTest extends ConsoleTestCase {
         $this->assertNull($config['instances']);
         $this->assertEquals($config['image'], $mockImage);
         $this->assertContains('Built image new-image', $commandTester->getDisplay());
+    }
 
+    public function testNoBuildWhenImageNameAlreadyExits() {
+        $app = $this->getApplication();
+        $command = $app->find('build');
+        $mockImage = $this->getMock('App\Platform\ImageInterface');
+        $mockClient = $this->getMock('App\Platform\ClientInterface');
+
+        $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
+        $mockLaunchCommand->expects($this->once())
+            ->method('doExecute')
+            ->will($this->returnCallback(function() use ($app, $mockImage){
+                $app->setConfigValue('image', $mockImage);
+            }));
+        $mockLaunchCommand->setName('find:image');
+        $app->add($mockLaunchCommand);
+
+        $expectedConfig = [
+            'image.name' => 'new-image'
+        ];
+        $app->setConfig($expectedConfig);
+
+        $mockClient->expects($this->never())->method('snapshotInstance');
+        $mockClient->expects($this->never())->method('convertToInstances');
+        $mockClient->expects($this->never())->method('killInstances');
+        $app->setClient($mockClient);
+
+        $commandTester = new CommandTester($command);
+        $commandTester->execute(['command' => $command->getName()]);
+
+        $config = $app->getConfig();
+        $this->assertEquals($config['image'], $mockImage);
     }
 }
