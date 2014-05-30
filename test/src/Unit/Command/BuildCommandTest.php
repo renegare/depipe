@@ -54,7 +54,7 @@ class BuildCommandTest extends ConsoleTestCase {
         $app->setClient($mockClient);
 
         $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
-        $mockLaunchCommand->expects($this->once())->method('doExecute');
+        $mockLaunchCommand->expects($this->never())->method('doExecute');
         $mockLaunchCommand->setName('find:image');
         $app->add($mockLaunchCommand);
 
