@@ -14,15 +14,10 @@ class BuildCommand extends \App\Command {
     }
 
     protected function doExecute(InputInterface $input) {
-        $imageName = $this->get('image.name');
-
         try {
-            $image = $this->getImage(function(){
-                $this->info('There is NO pre-specified image. Searching for a matching image ...');
-                $this->runSubCommand('find:image');
-                return $this->getImage();
-            });
-            
+            $client = $this->getClient();
+            $imageName = $this->get('image.name');
+            $image = $client->findImage($imageName);
             $this->info(sprintf('Image \'%s\' has already been built.', $imageName));
         } catch(\Exception $e) {
 
@@ -30,6 +25,7 @@ class BuildCommand extends \App\Command {
             $cleanUpInstances = false;
             $instances = $this->getInstances(function() use (&$cleanUpInstances){
                 $this->info('There are NO pre-specified instances. Launching an instance to build from ...');
+                $this->info('Build command needs to run launch command ...');
                 $this->runSubCommand('launch');
                 $cleanUpInstances = true;
                 return $this->getInstances();

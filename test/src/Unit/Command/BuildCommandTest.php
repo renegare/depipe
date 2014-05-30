@@ -47,13 +47,15 @@ class BuildCommandTest extends ConsoleTestCase {
                 $this->assertNotSame($mockInstances[1], $instance);
                 return $mockImage;
             }));
-
         $mockClient->expects($this->never())
             ->method('killInstances');
+        $mockClient->expects($this->once())
+            ->method('findImage')
+            ->will($this->returnCallback(function(){
+                throw new \Exception('Image does not exist');
+            }));
 
         $app->setClient($mockClient);
-
-        $this->patchClassMethod('App\Command\FindImageCommand::doExecute', null, 1);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
@@ -78,8 +80,6 @@ class BuildCommandTest extends ConsoleTestCase {
         $mockClient = $this->getMock('App\Platform\ClientInterface');
         $mockImage = $this->getMock('App\Platform\ImageInterface');
 
-        $this->patchClassMethod('App\Command\FindImageCommand::doExecute', null, 1);
-        
         $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
         $mockLaunchCommand->expects($this->once())
             ->method('doExecute')
@@ -112,6 +112,11 @@ class BuildCommandTest extends ConsoleTestCase {
                 $this->assertEquals($mockInstances, $instances);
                 return $mockInstances;
             }));
+        $mockClient->expects($this->once())
+            ->method('findImage')
+            ->will($this->returnCallback(function(){
+                throw new \Exception('Image does not exist');
+            }));
         $app->setClient($mockClient);
 
         $commandTester = new CommandTester($command);
@@ -129,15 +134,6 @@ class BuildCommandTest extends ConsoleTestCase {
         $mockImage = $this->getMock('App\Platform\ImageInterface');
         $mockClient = $this->getMock('App\Platform\ClientInterface');
 
-        $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
-        $mockLaunchCommand->expects($this->once())
-            ->method('doExecute')
-            ->will($this->returnCallback(function() use ($app, $mockImage){
-                $app->setConfigValue('image', $mockImage);
-            }));
-        $mockLaunchCommand->setName('find:image');
-        $app->add($mockLaunchCommand);
-
         $expectedConfig = [
             'image.name' => 'new-image'
         ];
@@ -146,6 +142,12 @@ class BuildCommandTest extends ConsoleTestCase {
         $mockClient->expects($this->never())->method('snapshotInstance');
         $mockClient->expects($this->never())->method('convertToInstances');
         $mockClient->expects($this->never())->method('killInstances');
+        $mockClient->expects($this->once())
+        ->method('findImage')
+        ->will($this->returnCallback(function($imageName) use ($mockImage){
+            $this->assertEquals('new-image', $imageName);
+            return $mockImage;
+        }));
         $app->setClient($mockClient);
 
         $commandTester = new CommandTester($command);
