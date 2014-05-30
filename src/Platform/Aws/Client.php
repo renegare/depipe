@@ -136,6 +136,13 @@ class Client implements ClientInterface {
     }
 
     public function findImage($imageName) {
-        throw new \Exception('Not Implemented');
+        $this->info(sprintf('Requesting describeImages of: %s', $imageName));
+        $client = $this->getEc2Client();
+        $response = $client->describeImages([
+            'Filters' => [
+                ['Name' => 'name', 'Values' => [$imageName]]]]);
+
+        $this->debug('Got response of describeImages', ['response' => $response->toArray()]);
+        return new Image($response->getPath('Images/0/ImageId'), $response->getPath('Images/0'));
     }
 }

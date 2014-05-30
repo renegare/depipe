@@ -117,7 +117,7 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
                 }));
             return $mockEc2Client;
         }, 1);
-        
+
         $image = $client->convertToImage('ami-123456');
         $this->assertInstanceof('App\Platform\Aws\Image', $image);
         $this->assertEquals('ami-123456', $image->getId());
@@ -205,5 +205,27 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
         $start = time();
         $client->convertToImage('ami-123456');
         $this->assertEquals($sleepTime * ($callCount-1), time() - $start);
+    }
+
+    public function testFindImage() {
+        $client = new Client();
+
+        $this->patchClassMethod('App\Platform\Aws\Client::getEc2Client', function() use (&$callCount){
+            $mockEc2Client = $this->getMockEc2Client(['describeImages']);
+            $mockEc2Client->expects($this->any())
+                ->method('describeImages')
+                ->will($this->returnCallback(function($config){
+                    $this->assertEquals([
+                        'Filters' => [
+                            [
+                                'Name' => 'name',
+                                'Values' => ['Test Image Name']]]], $config);
+                    return $this->getGuzzleModelResponse('aws/describe_images_response');
+                }));
+            return $mockEc2Client;
+        }, 1);
+
+        $image = $client->findImage('Test Image Name');
+        $this->assertInstanceOf('App\Platform\ImageInterface', $image);
     }
 }
