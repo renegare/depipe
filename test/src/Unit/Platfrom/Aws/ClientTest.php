@@ -97,29 +97,28 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
 
     public function testConvertToImage() {
         $callCount = 0;
-        $mockEc2Client = $this->getMockEc2Client(['describeImages']);
-        $mockEc2Client->expects($this->exactly(4))
-            ->method('describeImages')
-            ->will($this->returnCallback(function($request) use (&$callCount){
-                $this->assertEquals([
-                    'ImageIds' => ['ami-123456']
-                ], $request);
+        $client = new Client();
+        $client->setCredentials(['sleep.interval' => 0]);
 
-                ++$callCount;
-
-                if($callCount < 4) {
-                    return $this->getGuzzleModelResponse('aws/describe_images_response_sate_not_available');
-                } else {
-                    return $this->getGuzzleModelResponse('aws/describe_images_response');
-                }
-            }));
-
-        $client = $this->getMockClient(['getEc2Client']);
-        $client->expects($this->once())
-            ->method('getEc2Client')
-            ->will($this->returnValue($mockEc2Client));
+        $this->patchClassMethod('App\Platform\Aws\Client::getEc2Client', function() use (&$callCount){
+            $mockEc2Client = $this->getMockEc2Client(['describeImages']);
+            $mockEc2Client->expects($this->exactly(4))
+                ->method('describeImages')
+                ->will($this->returnCallback(function($request) use (&$callCount){
+                    $this->assertEquals([
+                        'ImageIds' => ['ami-123456']
+                    ], $request);
+                    ++$callCount;
+                    if($callCount < 4) {
+                        return $this->getGuzzleModelResponse('aws/describe_images_response_sate_not_available');
+                    } else {
+                        return $this->getGuzzleModelResponse('aws/describe_images_response');
+                    }
+                }));
+            return $mockEc2Client;
+        }, 1);
+        
         $image = $client->convertToImage('ami-123456');
-
         $this->assertInstanceof('App\Platform\Aws\Image', $image);
         $this->assertEquals('ami-123456', $image->getId());
     }
@@ -173,5 +172,38 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
         return new GuzzleModel(
             json_decode(
                 file_get_contents(sprintf(PROJECT_ROOT . '/test/mock_responses/%s.json', $fileKey)), true));
+    }
+
+    /**
+     * at times api calls require the system to wait until an instance/image
+     * is available. To do so repeated calls are made to ascertain the current
+     * state of things. Given some apis have a rate limit it would be best
+     * in such cases to halt/sleep the process for a predefined period time before
+     * retrying. This test verifies that sleep period (in seconds) is customisable
+     */
+    public function testConfigurableSleepTime() {
+        $sleepTime = 1;
+        $callCount = 0;
+        $client = new Client();
+        $client->setCredentials(['sleep.interval' => $sleepTime]);
+
+        $this->patchClassMethod('App\Platform\Aws\Client::getEc2Client', function() use (&$callCount){
+            $mockEc2Client = $this->getMockEc2Client(['describeImages']);
+            $mockEc2Client->expects($this->any())
+                ->method('describeImages')
+                ->will($this->returnCallback(function() use (&$callCount){
+                    ++$callCount;
+                    if($callCount < 3) {
+                        return $this->getGuzzleModelResponse('aws/describe_images_response_sate_not_available');
+                    } else {
+                        return $this->getGuzzleModelResponse('aws/describe_images_response');
+                    }
+                }));
+            return $mockEc2Client;
+        }, 1);
+
+        $start = time();
+        $client->convertToImage('ami-123456');
+        $this->assertEquals($sleepTime * ($callCount-1), time() - $start);
     }
 }

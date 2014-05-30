@@ -18,9 +18,13 @@ class Client implements ClientInterface {
     use LoggerTrait, LoggerAwareTrait;
 
     protected $credentials;
+    protected $sleepInterval = 5;
 
     public function setCredentials(array $credentials) {
         $this->credentials = $credentials;
+        if(isset($credentials['sleep.interval'])){
+            $this->sleepInterval = $credentials['sleep.interval'];
+        }
     }
 
     public function getCredentials() {
@@ -36,9 +40,10 @@ class Client implements ClientInterface {
             $imageState = $response->getPath('Images/*/State')[0];
             $imageNotReady = ImageState::AVAILABLE !== $imageState;
             if($imageNotReady) {
-                $this->info('Image state is not yet available ...', [
+                $this->info(sprintf('Image state is not yet available. Sleeping for %s seconds before retrying ...', $this->sleepInterval), [
                     'state' => $imageState
                 ]);
+                sleep($this->sleepInterval);
             }
         }
 
