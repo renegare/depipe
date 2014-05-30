@@ -88,4 +88,12 @@ interface ClientInterface extends LoggerAwareInterface, LoggerInterface {
      * @return void
      */
     public function killInstances(array $instances);
+
+    /**
+     * Finds the latest image that matches the user defined image name
+     * @param string $imageName
+     * @throws Exception
+     * @return ImageInterface
+     */
+    public function findImage($imageName);
 }

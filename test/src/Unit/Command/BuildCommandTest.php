@@ -53,10 +53,7 @@ class BuildCommandTest extends ConsoleTestCase {
 
         $app->setClient($mockClient);
 
-        $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
-        $mockLaunchCommand->expects($this->once())->method('doExecute');
-        $mockLaunchCommand->setName('find:image');
-        $app->add($mockLaunchCommand);
+        $this->patchClassMethod('App\Command\FindImageCommand::doExecute', null, 1);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute(['command' => $command->getName()]);
@@ -81,6 +78,8 @@ class BuildCommandTest extends ConsoleTestCase {
         $mockClient = $this->getMock('App\Platform\ClientInterface');
         $mockImage = $this->getMock('App\Platform\ImageInterface');
 
+        $this->patchClassMethod('App\Command\FindImageCommand::doExecute', null, 1);
+        
         $mockLaunchCommand = $this->getMockForAbstractClass('App\Command', ['doExecute', 'configure'], '', true);
         $mockLaunchCommand->expects($this->once())
             ->method('doExecute')

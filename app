@@ -24,6 +24,7 @@ $application->add(new App\Command\LaunchCommand());
 $application->add(new App\Command\BuildCommand());
 $application->add(new App\Command\ConnectCommand());
 $application->add(new App\Command\PipelineCommand());
+$application->add(new App\Command\FindImageCommand());
 
 // run application
 if(isset($return) && $return === true) {

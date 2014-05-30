@@ -134,4 +134,8 @@ class Client implements ClientInterface {
             ]);
         $this->debug('Got response of terminateInstances', ['response' => $response->toArray()]);
     }
+
+    public function findImage($imageName) {
+        throw new \Exception('Not Implemented');
+    }
 }
