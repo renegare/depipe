@@ -138,7 +138,9 @@ class Console extends Application {
             case 'env':
                 return preg_replace($pattern, getenv($arg), $value);
             case 'file':
-                $arg = preg_replace('/\$/', '\\\$', file_get_contents($arg));
+                $arg = file_get_contents($arg);
+                $arg = preg_replace('/\\\/', '\\\\\\\\', $arg);
+                $arg = preg_replace('/\$/', '\\\$', $arg);
                 return preg_replace($pattern, $arg, $value);
             case 'time':
                 return preg_replace($pattern, $arg ? date($arg) : time(), $value);

@@ -153,6 +153,7 @@ class ConsoleTest extends ConsoleTestCase {
 
         file_put_contents('depipe-mock.yml', $dumper->dump([
             'parameters' =>[
+                'json_string' => '{{file composer.json }}',
                 'string' => '{{file build.sh }}',
                 'embedded_string' => 'echo "{{file build.sh }}" > /tmp/build.sh',
                 'array' => ['{{file build.sh }}', 'echo "{{file build.sh }}" > /tmp/build.sh']]]));
@@ -160,7 +161,9 @@ class ConsoleTest extends ConsoleTestCase {
             '--config' => 'depipe-mock.yml'
         ]);
         $fileContents = file_get_contents('build.sh');
+        $jsonFileContents = file_get_contents('composer.json');
         $this->assertEquals([
+            'json_string' => $jsonFileContents,
             'string' => $fileContents,
             'embedded_string' => 'echo "' . $fileContents . '" > /tmp/build.sh',
             'array' => [$fileContents, 'echo "' . $fileContents . '" > /tmp/build.sh']
