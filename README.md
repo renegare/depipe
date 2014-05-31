@@ -75,6 +75,8 @@ Help Needed
 ### Road Map to v0.2.0 (useful-release)
 
 #### Configuration (depipe.yml.dist)
+- [ ] introduce concept of private cloud?
+- [ ] file upload component ... remove string regex madness!
 - [ ] pipelines: multi pipe line config
 > - Run pipelines in isolated processes (however they all start from the root config)
 > - Allow special @wait param in pipe config (wait for an event in a parallel pipeline)
@@ -82,7 +84,7 @@ Help Needed
 #### Commands
 - [ ] find:instances - find instances
 - [ ] kill - terminate instances
-- [ ] find:image - find instances
+- [ ] find:image - find instances (half done ... but needs a rethink)
 - [ ] delete - delete an image
 
 #### Release
