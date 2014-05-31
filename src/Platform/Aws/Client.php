@@ -116,8 +116,41 @@ class Client implements ClientInterface {
         return $this->convertToInstances($instanceIds);
     }
 
-    public function connectInstancesToLoadBalancer(array $instances, LoadBalancerInterface $loadBalancer) {
-        throw new \Exception('Not Implemented');
+    public function connectInstancesToLoadBalancer(array $instances, LoadBalancerInterface $loadBalancer){
+        $client = $this->getELBClient();
+        $instanceCount = count($instances);
+        $instanceIds = array_map(function($instance){
+            return ['InstanceId' => (string) $instance];
+        }, $instances);
+        $config  = [
+            'LoadBalancerName' => (string) $loadBalancer,
+            'Instances' => $instanceIds
+        ];
+
+        $this->info(sprintf('Requesting registerInstancesWithLoadBalancer for: %s (%s) ...', $loadBalancer, implode(',', $instances)), $config);
+
+        $response = $client->registerInstancesWithLoadBalancer($config);
+        $this->debug('Got response of registerInstancesWithLoadBalancer', ['response' => $response->toArray()]);
+
+        $this->info('Waiting for instances to be healthy ...');
+
+        $healthyCount = 0;
+        while($healthyCount < $instanceCount) {
+            $response = $client->describeInstanceHealth($config);
+            $healthyCount = 0;
+            foreach($response->getPath('InstanceStates') as $instance) {
+                if($instance['State'] === 'InService') {
+                    ++$healthyCount;
+                }
+            }
+
+            if($healthyCount < $instanceCount) {
+                $this->info(sprintf('%s/%s instances healthy. Will recheck in %s seconds ...', $healthyCount, $instanceCount, $this->sleepInterval));
+                sleep($this->sleepInterval);
+            }
+        }
+
+        $this->info('Instances are all healthy!');
     }
 
     public function getEc2Client() {

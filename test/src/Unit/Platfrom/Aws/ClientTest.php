@@ -5,6 +5,7 @@ namespace App\Test\Unit\Platform\Aws;
 use App\Platform\Aws\Client;
 use App\Platform\Aws\Image;
 use App\Platform\Aws\Instance;
+use App\Platform\Aws\LoadBalancer;
 use Symfony\Component\Yaml\Dumper;
 use Guzzle\Service\Resource\Model as GuzzleModel;
 
@@ -251,5 +252,70 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
         $elb = $client->convertToLoadBalancer('elb-test-name');
         $this->assertInstanceOf('App\Platform\LoadBalancerInterface', $elb);
         $this->assertEquals('elb-test-name', (string) $elb);
+    }
+
+    public function testConnectInstancesToLoadBalancer() {
+        $loadBalancer = new LoadBalancer('elb-test', []);
+        $instances = [new Instance('i-test1', []), new Instance('i-test2', [])];
+
+        $this->patchClassMethod('App\Platform\Aws\Client::getELBClient', function(){
+            $client = $this->getMockBuilder('Aws\ElasticLoadBalancing\ElasticLoadBalancingClient')
+                ->setMethods(['registerInstancesWithLoadBalancer', 'describeInstanceHealth'])
+                ->disableOriginalConstructor()
+                ->getMock();
+
+            $client->expects($this->once())
+                ->method('registerInstancesWithLoadBalancer')
+                ->will($this->returnCallback(function($config) {
+                    $this->assertEquals([
+                        'LoadBalancerName' => 'elb-test',
+                        'Instances' => [
+                            ['InstanceId' => 'i-test1'],
+                            ['InstanceId' => 'i-test2']]], $config);
+                    return $this->getGuzzleModelResponse('aws/null_response');
+                }));
+
+            $count = 0;
+            $instancesHealth = [
+                'i-test1' => false,
+                'i-test2' => false
+            ];
+
+            $client->expects($this->exactly(5))
+                ->method('describeInstanceHealth')
+                ->will($this->returnCallback(function($config) use(&$count, &$instancesHealth){
+
+                    $this->assertEquals([
+                        'LoadBalancerName' => 'elb-test',
+                        'Instances' => [
+                            ['InstanceId' => 'i-test1'],
+                            ['InstanceId' => 'i-test2']]], $config);
+
+                    switch($count) {
+                        case 2:
+                            $instancesHealth['i-test2'] = true;
+                            break;
+                        case 4:
+                            $instancesHealth['i-test1'] = true;
+                            break;
+                    }
+                    ++$count;
+
+                    $model = $this->getGuzzleModelResponse('aws/describe_instance_health_response');
+                    $states = [];
+                    foreach($config['Instances'] as $instance) {
+                        $id = $instance['InstanceId'];
+                        $instance['State'] = $instancesHealth[$id]? 'InService' : 'OutOfService';
+                        $states[] = $instance;
+                    }
+                    $model->setPath('InstanceStates', $states);
+                    return $model;
+                }));
+            return $client;
+        }, 1);
+
+        $client = new Client();
+        $client->setCredentials(['sleep.interval' => 0]);
+        $elb = $client->connectInstancesToLoadBalancer($instances, $loadBalancer);
     }
 }
