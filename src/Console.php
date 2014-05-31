@@ -7,12 +7,16 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Yaml\Parser;
+
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use Symfony\Component\Yaml\Parser;
+
 use App\Platform\ClientInterface;
 use App\Platform\InstanceAccessInterface;
+use App\Platform\LoadBalancerInterface;
 use App\Platform\ImageInterface;
+
 use App\Util\InstanceAccess\SSHAccess;
 
 class Console extends Application {
@@ -216,7 +220,12 @@ class Console extends Application {
     }
 
     public function getLoadBalancer($default=null) {
-        return $this->getClient()
-            ->convertToLoadBalancer($this->getConfigValue('load.balancer', $default));
+        $loadBalancer = $this->getConfigValue('load.balancer', $default);
+        if(!($loadBalancer instanceof LoadBalancerInterface)) {
+            return $this->getClient()
+                ->convertToLoadBalancer($loadBalancer);
+        }
+
+        return $loadBalancer;
     }
 }

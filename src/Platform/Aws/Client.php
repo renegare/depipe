@@ -2,17 +2,21 @@
 
 namespace App\Platform\Aws;
 
+use Symfony\Component\Yaml\Dumper;
+use Psr\Log\LoggerTrait;
+use Psr\Log\LoggerAwareTrait;
+
+use Aws\Ec2\Ec2Client;
+use Aws\ElasticLoadBalancing\ElasticLoadBalancingClient;
+use Aws\Ec2\Enum\ImageState;
+
 use App\Platform\ClientInterface;
 use App\Platform\InstanceInterface;
 use App\Platform\ImageInterface;
 use App\Platform\LoadBalancerInterface;
 use App\Platform\InstanceAccessInterface;
-use Aws\Ec2\Ec2Client;
-use Symfony\Component\Yaml\Dumper;
+
 use App\Util\SSHClient;
-use Psr\Log\LoggerTrait;
-use Psr\Log\LoggerAwareTrait;
-use Aws\Ec2\Enum\ImageState;
 
 class Client implements ClientInterface {
     use LoggerTrait, LoggerAwareTrait;
@@ -72,7 +76,12 @@ class Client implements ClientInterface {
     }
 
     public function convertToLoadBalancer($loadBalancer) {
-        throw new \Exception('Not Implemented');
+        $client = $this->getELBClient();
+        $this->info(sprintf('Requesting describeLoadBalancers of: %s ...', $loadBalancer));
+        $response = $client->describeLoadBalancers(['LoadBalancerNames' => [$loadBalancer]]);
+        $this->debug('Got response of describeLoadBalancers', ['response' => $response->toArray()]);
+        $description = $response->getPath('LoadBalancerDescriptions/0');
+        return new LoadBalancer($description['LoadBalancerName'], $description);
     }
 
     public function snapshotInstance(InstanceInterface $instance, $imageName='') {
@@ -113,6 +122,10 @@ class Client implements ClientInterface {
 
     public function getEc2Client() {
         return Ec2Client::factory($this->getCredentials());
+    }
+
+    public function getELBClient() {
+        return ElasticLoadBalancingClient::factory($this->getCredentials());
     }
 
     public function log($level, $message, array $context = array()) {

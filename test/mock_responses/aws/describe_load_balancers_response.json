@@ -1,0 +1,7 @@
+{
+    "LoadBalancerDescriptions": [
+        {
+            "LoadBalancerName": "elb-load-balancer-name"
+        }
+    ]
+}

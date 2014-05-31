@@ -228,4 +228,28 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
         $image = $client->findImage('Test Image Name');
         $this->assertInstanceOf('App\Platform\ImageInterface', $image);
     }
+
+    public function testConvertToLoadBalancer() {
+        $this->patchClassMethod('App\Platform\Aws\Client::getELBClient', function(){
+            $client = $this->getMockBuilder('Aws\ElasticLoadBalancing\ElasticLoadBalancingClient')
+                ->setMethods(['describeLoadBalancers'])
+                ->disableOriginalConstructor()
+                ->getMock();
+            $client->expects($this->once())
+                ->method('describeLoadBalancers')
+                ->will($this->returnCallback(function($config) {
+                    $this->assertEquals([
+                        'LoadBalancerNames' => ['elb-test-name']], $config);
+                    $model = $this->getGuzzleModelResponse('aws/describe_load_balancers_response');
+                    $model->setPath('LoadBalancerDescriptions/0/LoadBalancerName', 'elb-test-name');
+                    return $model;
+                }));
+            return $client;
+        }, 1);
+
+        $client = new Client();
+        $elb = $client->convertToLoadBalancer('elb-test-name');
+        $this->assertInstanceOf('App\Platform\LoadBalancerInterface', $elb);
+        $this->assertEquals('elb-test-name', (string) $elb);
+    }
 }
