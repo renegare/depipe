@@ -75,6 +75,8 @@ Help Needed
 ### Road Map to v0.2.0 (useful-release)
 
 #### Configuration (depipe.yml.dist)
+- [ ] pipes need to clean up after themselves
+- [ ] pipes that create/modify (not including search or destructive pipes) should be able to reverse/undo what they have done?
 - [ ] introduce concept of private cloud?
 - [ ] file upload component ... remove string regex madness!
 - [ ] pipelines: multi pipe line config
@@ -89,3 +91,8 @@ Help Needed
 
 #### Release
 - [ ] tag v0.2.0
+
+### Road Map to v0.3.0 (vendor-independant-release)
+- [ ] Review vendor specific classes, normalize and simplify
+- [ ] Create another vender set of classes
+- [ ] Documentation!
