@@ -93,7 +93,10 @@ class Client implements ClientInterface {
         return $this->convertToImage($imageId);
     }
 
-    public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], array $userDataConfig=[]) {
+    /**
+     * {@inheritdoc}
+     */
+    public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], InstanceAccessInterface $instanceAcces = null, array $userDataConfig=[]) {
         $config = array_merge($instanceConfig, [
             'ImageId' => $image->getId(),
             'MinCount' => $instanceCount,

@@ -65,12 +65,13 @@ interface ClientInterface extends LoggerAwareInterface, LoggerInterface {
      * launches instances from a given image
      * @param ImageInterface $imageName - image to launch instances from
      * @param int $instanceCount - number of instances to launch
-     * @param array $insanceConfig - platform specific configuration
+     * @param array $instanceConfig - platform specific configuration
+     * @param InstanceAccessInterface $instanceAccess - instanceAccess object that may or may not be used by the platform to gurantee access to the server (See platform specific implementation)
      * @param array $userDataConfig - cloudinit-esque config, use only if you image/platform supports it
      * @throws Exception - from the platform
      * @return array - of InstanceInterface(s)
      */
-    public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], array $userDataConfig=[]);
+    public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], InstanceAccessInterface $instanceAccess = null, array $userDataConfig=[]);
 
     /**
      * Connects instances to a load balancer

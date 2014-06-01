@@ -60,7 +60,7 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
         $client->expects($this->any())
             ->method('getEc2Client')
             ->will($this->returnValue($mockEc2Client));
-        $instances = $client->launchInstances($image, 1, $instanceConfig, $userDataConfig);
+        $instances = $client->launchInstances($image, 1, $instanceConfig, null, $userDataConfig);
 
         $this->assertCount(1, $instances);
         $this->assertInstanceof('App\Platform\Aws\Instance', $instances[0]);

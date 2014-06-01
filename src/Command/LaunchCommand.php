@@ -23,7 +23,7 @@ class LaunchCommand extends \App\Command {
         $scripts = $this->get('scripts', []);
         $instanceAccess = $this->getInstanceAccess();
 
-        $instances = $client->launchInstances($image, $instanceCount, $instanceConfig, $userDataConfig);
+        $instances = $client->launchInstances($image, $instanceCount, $instanceConfig, $instanceAccess, $userDataConfig);
 
         foreach($instances as $instance) {
             $instance->provisionWith($instanceAccess, $scripts);

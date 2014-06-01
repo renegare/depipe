@@ -55,7 +55,7 @@ class LaunchCommandTest extends ConsoleTestCase {
         $mockClient = $this->getMock('App\Platform\ClientInterface');
         $mockClient->expects($this->once())
             ->method('launchInstances')
-            ->will($this->returnCallback(function($image, $instanceCount, $instanceConfig, $userDataConfig) use ($expectedConfig, $mockInstance, $mockImage){
+            ->will($this->returnCallback(function($image, $instanceCount, $instanceConfig, $instanceAccess, $userDataConfig) use ($expectedConfig, $mockInstance, $mockImage){
                 $this->assertEquals($image, $mockImage);
                 $this->assertEquals($instanceCount, $expectedConfig['instance.count']);
                 $this->assertEquals($userDataConfig, $expectedConfig['userdata.config']);

@@ -199,9 +199,9 @@ class Console extends Application {
             if($this->logger) {
                 $this->instanceAccess->setLogger($this->logger);
             }
+            $this->instanceAccess->setCredentials($this->getConfigValue('instance.access'));
         }
 
-        $this->instanceAccess->setCredentials($this->getConfigValue('instance.access'));
         return $this->instanceAccess;
     }
 
