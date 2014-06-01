@@ -109,10 +109,10 @@ class Client implements ClientInterface {
             $config['UserData'] = base64_encode("#cloud-config\n" . $yamlDumper->dump($userDataConfig));
         }
 
-        $this->info($instanceAccess instanceOf InstanceAccess);
         if($instanceAccess instanceOf InstanceAccess) {
-            $this->info('Using provided aws instance access as KeyName for launching instance(s) ...');
+
             $keyName = $instanceAccess->getKeyName();
+            $this->info(sprintf('Using provided aws instance access (as KeyName = \'%s\' for launching instance(s) ...', $keyName));
             if(!$instanceAccess->hasKey()) {
                 $this->info('Provided aws instance access, does not have a key!');
                 $response = $ec2Client->deleteKeyPair(array(
