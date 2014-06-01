@@ -6,6 +6,8 @@ use App\Platform\Aws\Client;
 use App\Platform\Aws\Image;
 use App\Platform\Aws\Instance;
 use App\Platform\Aws\LoadBalancer;
+use App\Platform\Aws\InstanceAccess;
+
 use Symfony\Component\Yaml\Dumper;
 use Guzzle\Service\Resource\Model as GuzzleModel;
 
@@ -55,7 +57,6 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
                 return $this->getGuzzleModelResponse('aws/describe_instances_response');
             }));
 
-
         $client = $this->getMockClient(['getEc2Client']);
         $client->expects($this->any())
             ->method('getEc2Client')
@@ -64,6 +65,75 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
 
         $this->assertCount(1, $instances);
         $this->assertInstanceof('App\Platform\Aws\Instance', $instances[0]);
+    }
+
+    public function testLaunchInstancesWithAWSInstanceAccess() {
+        $image = new Image('ami-123345', []);
+        $fakeKey = '---FAKEKey---';
+        $generatedKeyName = 'FakeKeyName';
+        $instanceAccess = new InstanceAccess();
+        $instanceAccess->setCredentials([
+            'key.name' => $generatedKeyName
+        ]);
+
+        /*
+        $this->patchClassMethod('App\Platform\Aws\InstanceAccess::getKeyName', function($name) use ($generatedKeyName){
+            return $generatedKeyName;
+        }, 1);
+
+        $this->patchClassMethod('App\Platform\Aws\InstanceAccess::setPrivateKey', function($key){
+            $this->assertEquals($fakeKey, $key);
+        }, 1);
+
+        $this->patchClassMethod('App\Platform\Aws\InstanceAccess::hasPrivateKey', function(){
+            return false;
+        }, 1);
+        */
+
+        $this->patchClassMethod('App\Platform\Aws\Client::convertToInstances');
+        $this->patchClassMethod('App\Platform\Aws\Client::getEc2Client', function() use ($fakeKey, $generatedKeyName){
+            $mockEc2Client = $this->getMockEc2Client([
+                'runInstances',
+                'deleteKeyPair',
+                'createKeyPair',
+                'waitUntilInstanceRunning']);
+            $mockEc2Client->expects($this->once())
+                ->method('runInstances')
+                ->will($this->returnCallback(function($config) use ($generatedKeyName){
+                    $yamlDumper = new Dumper();
+                    $this->assertEquals([
+                        'ImageId' => 'ami-123345',
+                        'MinCount' => 1,
+                        'MaxCount' => 1,
+                        'KeyName' => $generatedKeyName
+                    ], $config);
+
+                    return new GuzzleModel([
+                            'Instances' => [['InstanceId' => 'i-123456']]
+                        ]);
+                }));
+
+            $mockEc2Client->expects($this->once())
+                ->method('deleteKeyPair')
+                ->with($this->equalTo(['KeyName' => $generatedKeyName]))
+                ->will($this->returnValue(new GuzzleModel([])));
+
+            $mockEc2Client->expects($this->once())
+                ->method('createKeyPair')
+                ->with($this->equalTo(['KeyName' => $generatedKeyName]))
+                ->will($this->returnValue(new GuzzleModel([
+                    'KeyName' => $generatedKeyName,
+                    'KeyFingerprint' => '99:99:aa:...:...',
+                    'KeyMaterial' => $fakeKey
+                ])));
+
+            $mockEc2Client->expects($this->once())
+                ->method('waitUntilInstanceRunning');
+            return $mockEc2Client;
+        }, 1);
+
+        $client = new Client();
+        $client->launchInstances($image, 1, [], $instanceAccess);
     }
 
     public function testGetEc2Client() {

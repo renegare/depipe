@@ -16,6 +16,10 @@ class SSHAccess implements InstanceAccessInterface {
     protected $conn;
     protected $host;
 
+    public function __construct() {
+        $this->credentials = new ParameterBag();
+    }
+    
     /**
      * {@inheritdoc}
      */

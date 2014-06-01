@@ -96,7 +96,8 @@ class Client implements ClientInterface {
     /**
      * {@inheritdoc}
      */
-    public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], InstanceAccessInterface $instanceAcces = null, array $userDataConfig=[]) {
+    public function launchInstances(ImageInterface $image, $instanceCount = 1, array $instanceConfig=[], InstanceAccessInterface $instanceAccess = null, array $userDataConfig=[]) {
+        $ec2Client = $this->getEc2Client();
         $config = array_merge($instanceConfig, [
             'ImageId' => $image->getId(),
             'MinCount' => $instanceCount,
@@ -108,8 +109,25 @@ class Client implements ClientInterface {
             $config['UserData'] = base64_encode("#cloud-config\n" . $yamlDumper->dump($userDataConfig));
         }
 
+        if($instanceAccess instanceOf InstanceAccess) {
+            $this->notice('Using provided aws instance access as KeyName for launching instance(s) ...');
+            $keyName = $instanceAccess->getKeyName();
+            if(!$instanceAccess->hasKey()) {
+                $this->notice('Provided aws instance access, does not have a key!');
+                $response = $ec2Client->deleteKeyPair(array(
+                    'KeyName' => $keyName
+                ));
+                $this->notice(sprintf('Deleted \'%s\' key pair in aws', $keyName), ['response' => $response->toArray()]);
+
+                $response = $ec2Client->createKeyPair(array(
+                    'KeyName' => $keyName
+                ));
+                $this->notice(sprintf('Created new \'%s\' key pair in aws', $keyName), ['response' => $response->toArray()]);
+            }
+            $config['KeyName'] = $keyName;
+        }
+
         $this->info(sprintf('Launching %s instance(s) ...', $instanceCount), ['request' => $config]);
-        $ec2Client = $this->getEc2Client();
         $responses = $ec2Client->runInstances($config);
 
         $instanceIds = $responses->getPath('Instances/*/InstanceId');
