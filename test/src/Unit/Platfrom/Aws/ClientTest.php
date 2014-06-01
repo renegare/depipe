@@ -76,10 +76,6 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
             'key.name' => $generatedKeyName
         ]);
 
-        $this->patchClassMethod('App\Platform\Aws\InstanceAccess::setPrivateKey', function($key) use ($fakeKey){
-            $this->assertEquals($fakeKey, $key);
-        }, 1);
-
         $this->patchClassMethod('App\Platform\Aws\Client::convertToInstances');
         $this->patchClassMethod('App\Platform\Aws\Client::getEc2Client', function() use ($fakeKey, $generatedKeyName){
             $mockEc2Client = $this->getMockEc2Client([
@@ -124,6 +120,7 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
 
         $client = new Client();
         $client->launchInstances($image, 1, [], $instanceAccess);
+        $this->assertEquals($fakeKey, $instanceAccess->get('key'));
     }
 
     public function testGetEc2Client() {
