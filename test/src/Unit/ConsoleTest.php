@@ -238,8 +238,6 @@ class ConsoleTest extends ConsoleTestCase {
     }
 
     public function testGetInstanceAccessOfSpecifiedClas() {
-        $self = $this;
-
         $app = $this->getApplication();
         $app->setConfig([
             'instance.access' => [
@@ -270,5 +268,26 @@ class ConsoleTest extends ConsoleTestCase {
 
         $this->assertEquals(['base-ami' => 'ami-test'], $app->getPipeLine());
         @unlink('depipe-mock.yml');
+    }
+
+    public function testAppendConfigReplacesInstanceAccess() {
+        $app = $this->getApplication();
+        $app->setConfig([
+            'instance.access' => [
+                'class' => 'App\Platform\Aws\InstanceAccess'
+            ]]);
+
+        $access1 = $app->getInstanceAccess();
+        $this->assertInstanceOf('App\Platform\Aws\InstanceAccess', $access1);
+
+        $app->appendConfig([
+            'instance.access' => [
+                'class' => 'App\Platform\Aws\InstanceAccess'
+            ]]);
+
+        $access2 = $app->getInstanceAccess();
+        $this->assertInstanceOf('App\Platform\Aws\InstanceAccess', $access2);
+
+        $this->assertNotSame($access1, $access2);
     }
 }

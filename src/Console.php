@@ -160,6 +160,9 @@ class Console extends Application {
     }
 
     public function appendConfig(array $config) {
+        if(isset($config['instance.access'])) {
+            $this->instanceAccess = null;
+        }
         $this->config = array_merge($this->config, $config);
     }
 
