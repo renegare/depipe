@@ -25,12 +25,15 @@ class LaunchCommand extends \App\Command {
 
         $instances = $client->launchInstances($image, $instanceCount, $instanceConfig, $instanceAccess, $userDataConfig);
 
-        foreach($instances as $instance) {
-            $instance->provisionWith($instanceAccess, $scripts);
+        $scriptCount = count($scripts);
+        if($scriptCount > 0) {
+            $this->info(sprintf('Executing %s scripts on each instance ...', $scriptCount));
+            foreach($instances as $instance) {
+                $instance->provisionWith($instanceAccess, $scripts);
+            }
         }
 
         $this->set('instances', $instances);
-
         $this->info(sprintf('Launched %s instance(s)', count($instances)));
     }
 }

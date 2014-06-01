@@ -19,7 +19,7 @@ class SSHAccess implements InstanceAccessInterface {
     public function __construct() {
         $this->credentials = new ParameterBag();
     }
-    
+
     /**
      * {@inheritdoc}
      */
@@ -76,6 +76,11 @@ class SSHAccess implements InstanceAccessInterface {
         });
 
         $exitCode = $this->conn->getExitStatus();
+
+        if($exitCode !== 0) {
+            $this->critical('Erronous code detected', ['script' => $code]);
+            throw new \RuntimeException('Script exit code was not 0!', $exitCode);
+        }
     }
 
     /**

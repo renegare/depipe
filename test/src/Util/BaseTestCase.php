@@ -15,11 +15,11 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase {
      * assert the method has been called. However it does not apply call assertion to
      * constructor methods (some complications).
      * @param string $patchTarget - class::method to override
-     * @param string $patch - optional callback that will be called in place of the method (else does nothing)
+     * @param mixed $patch - optional value|callback that will be returned|called in place of the method (else does nothing)
      * @param string $expectedCallCount - optional (not applied to constructor method)
      * @return void
      */
-    public function patchClassMethod($patchTarget, \Closure $patch=null, $expectedCallCount=null) {
+    public function patchClassMethod($patchTarget, $patch=null, $expectedCallCount=null) {
         list($class, $method) = explode('::', $patchTarget);
         $className = explode('\\', $class);
         $className = array_pop($className);
@@ -45,9 +45,11 @@ abstract class BaseTestCase extends \PHPUnit_Framework_TestCase {
                 call_user_func_array([$mock, $method], $args);
             }
             $args[] = $this;
-            if($patch) {
+            if($patch instanceof \Closure) {
                 return call_user_func_array($patch, $args);
             }
+
+            return $patch;
         });
     }
 }
