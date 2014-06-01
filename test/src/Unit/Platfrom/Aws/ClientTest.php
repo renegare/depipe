@@ -76,13 +76,13 @@ class ClientTest extends \App\Test\Util\BaseTestCase {
             'key.name' => $generatedKeyName
         ]);
 
+        $this->patchClassMethod('App\Platform\Aws\InstanceAccess::setPrivateKey', function($key) use ($fakeKey){
+            $this->assertEquals($fakeKey, $key);
+        }, 1);
+
         /*
         $this->patchClassMethod('App\Platform\Aws\InstanceAccess::getKeyName', function($name) use ($generatedKeyName){
             return $generatedKeyName;
-        }, 1);
-
-        $this->patchClassMethod('App\Platform\Aws\InstanceAccess::setPrivateKey', function($key){
-            $this->assertEquals($fakeKey, $key);
         }, 1);
 
         $this->patchClassMethod('App\Platform\Aws\InstanceAccess::hasPrivateKey', function(){

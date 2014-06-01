@@ -13,4 +13,8 @@ class InstanceAccess extends SSHAccess {
     public function getKeyName() {
         return $this->get('key.name');
     }
+
+    public function setPrivateKey($key) {
+        $this->credentials->set('key', $key);
+    }
 }

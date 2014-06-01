@@ -123,6 +123,7 @@ class Client implements ClientInterface {
                     'KeyName' => $keyName
                 ));
                 $this->notice(sprintf('Created new \'%s\' key pair in aws', $keyName), ['response' => $response->toArray()]);
+                $instanceAccess->setPrivateKey($response->getPath('KeyMaterial'));
             }
             $config['KeyName'] = $keyName;
         }
