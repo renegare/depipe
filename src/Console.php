@@ -17,8 +17,6 @@ use App\Platform\InstanceAccessInterface;
 use App\Platform\LoadBalancerInterface;
 use App\Platform\ImageInterface;
 
-use App\Util\InstanceAccess\SSHAccess;
-
 class Console extends Application {
 
     protected $config = [];
@@ -175,7 +173,7 @@ class Console extends Application {
     public function getClient() {
         if(!$this->client) {
             $crendtials = $this->getConfigValue('credentials');
-            $class = $crendtials['vendor'];
+            $class = $crendtials['class'];
             $client = new $class;
             if($this->logger) {
                 $client->setLogger($this->logger);
@@ -195,11 +193,18 @@ class Console extends Application {
 
     public function getInstanceAccess() {
         if(!$this->instanceAccess) {
-            $this->instanceAccess = new SSHAccess();
+            $credentials = $this->getConfigValue('instance.access');
+            if(isset($credentials['class'])) {
+                $class = $credentials['class'];
+            } else {
+                $class = 'App\Util\InstanceAccess\SSHAccess';
+            }
+
+            $this->instanceAccess = new $class;
             if($this->logger) {
                 $this->instanceAccess->setLogger($this->logger);
             }
-            $this->instanceAccess->setCredentials($this->getConfigValue('instance.access'));
+            $this->instanceAccess->setCredentials($credentials);
         }
 
         return $this->instanceAccess;

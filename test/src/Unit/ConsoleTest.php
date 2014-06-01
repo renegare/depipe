@@ -198,7 +198,7 @@ class ConsoleTest extends ConsoleTestCase {
         $this->patchClassMethod('App\Platform\Aws\Client::setCredentials', function($config) use ($self){
             $self->assertEquals([
                 'secret' => 'secret-123456',
-                'vendor' => 'App\Platform\Aws\Client'
+                'class' => 'App\Platform\Aws\Client'
             ], $config);
         }, 1);
 
@@ -206,7 +206,7 @@ class ConsoleTest extends ConsoleTestCase {
         $app->setConfig([
             'credentials' => [
                 'secret' => 'secret-123456',
-                'vendor' => 'App\Platform\Aws\Client'
+                'class' => 'App\Platform\Aws\Client'
             ]
         ]);
 
@@ -235,6 +235,19 @@ class ConsoleTest extends ConsoleTestCase {
 
         $access = $app->getInstanceAccess();
         $this->assertInstanceOf('App\Platform\InstanceAccessInterface', $access);
+    }
+
+    public function testGetInstanceAccessOfSpecifiedClas() {
+        $self = $this;
+
+        $app = $this->getApplication();
+        $app->setConfig([
+            'instance.access' => [
+                'class' => 'App\Platform\Aws\InstanceAccess'
+            ]]);
+
+        $access = $app->getInstanceAccess();
+        $this->assertInstanceOf('App\Platform\Aws\InstanceAccess', $access);
     }
 
     /**
