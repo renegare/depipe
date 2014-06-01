@@ -78,7 +78,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
 
         $this->patchClassMethod('App\Util\InstanceAccess\SSHAccess::info', function($message) use ($mockHost, &$isLogged){
             if($isLogged) {
-                $this->assertEquals("[$mockHost] test-output", $message);
+                $this->assertEquals("[$mockHost]:\ntest-output", $message);
             }
         });
 
