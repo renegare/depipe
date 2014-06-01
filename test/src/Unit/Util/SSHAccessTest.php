@@ -130,7 +130,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
 
         $this->patchClassMethod('Crypt_RSA::loadKey', function($key) {
             $this->assertEquals('--key--123456--key--', $key);
-        }, 2);
+        }, 1);
 
         $this->patchClassMethod('App\Util\Net\SFTP::login', function($user, $password) {
             $this->assertEquals('root', $user);
@@ -154,55 +154,16 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $this->patchClassMethod('App\Util\Net\SSH2::disconnect');
         $this->patchClassMethod('App\Util\Net\SSH2::Net_SSH2');
         $this->patchClassMethod('App\Util\Net\SSH2::login');
+        $this->patchClassMethod('App\Util\Net\SFTP::login');
+        $this->patchClassMethod('App\Util\Net\SFTP::Net_SFTP');
+        $this->patchClassMethod('App\Util\Net\SFTP::put');
+        $this->patchClassMethod('App\Util\Net\SFTP::chmod');
+        $this->patchClassMethod('App\Util\Net\SSH2::exec');
 
         $this->patchClassMethod('App\Util\Net\SSH2::getExitStatus', 1, 1);
-
-        $mockHost = 'test.somewhere.com';
-        $constructorCalled = false;
-        $this->patchClassMethod('App\Util\Net\SFTP::Net_SFTP', function($host, $port, $timeout) use (&$constructorCalled, $mockHost){
-            $this->assertEquals($mockHost, $host);
-            $this->assertEquals(22, $port);
-            $constructorCalled = true;
-        });
-
-        $this->patchClassMethod('App\Util\Net\SFTP::login', function($user, $password) use (&$expectedMaxAttempts, &$constructorCalled){
-            $this->assertTrue($constructorCalled);
-            $this->assertEquals('root', $user);
-            $this->assertEquals('test', $password);
-        }, 1);
-
-        $this->patchClassMethod('App\Util\Net\SFTP::put', function($remotePath, $code) {
-            $this->assertEquals('/tmp/execute.sh', $remotePath);
-            $this->assertEquals("#!/bin/bash\ndate", $code);
-        }, 1);
-
-        $this->patchClassMethod('App\Util\Net\SFTP::chmod', function($premissions, $remotePath) {
-            $this->assertEquals('/tmp/execute.sh', $remotePath);
-            $this->assertEquals(0550, $premissions);
-        }, 1);
-
-        $isLogged = false;
-        $this->patchClassMethod('App\Util\Net\SSH2::exec', function($command, $cb) use (&$isLogged){
-            $this->assertEquals('/tmp/execute.sh', $command);
-            $this->assertInstanceOf('Closure', $cb);
-            $isLogged = true;
-            $cb('test-output');
-            $isLogged = false;
-        }, 1);
-
-        $this->patchClassMethod('App\Util\InstanceAccess\SSHAccess::info', function($message) use ($mockHost, &$isLogged){
-            if($isLogged) {
-                $this->assertEquals("[$mockHost] test-output", $message);
-            }
-        });
-
         $access = new SSHAccess();
-        $access->setCredentials([
-            'user' => 'root',
-            'password' => 'test'
-        ]);
 
-        $access->connect($mockHost);
+        $access->connect('test.somewhere.com');
         $access->exec("#!/bin/bash\ndate");
     }
 }

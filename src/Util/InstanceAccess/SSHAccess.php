@@ -68,7 +68,7 @@ class SSHAccess implements InstanceAccessInterface {
         $sftp = new SFTP($this->host, 22);
         $sftp->login($this->get('user'), $this->getPassword());
 
-        $this->info('Executing code ...');
+        $this->info(sprintf('Executing code `%s ...', substr($code, 0, 100)));
         $sftp->put('/tmp/execute.sh', $code);
         $sftp->chmod(0550, '/tmp/execute.sh');
         $this->conn->exec('/tmp/execute.sh', function($output) {
@@ -78,8 +78,8 @@ class SSHAccess implements InstanceAccessInterface {
         $exitCode = $this->conn->getExitStatus();
 
         if($exitCode !== 0) {
-            $this->critical('Erronous code detected', ['script' => $code]);
-            throw new \RuntimeException('Script exit code was not 0!', $exitCode);
+            $this->critical('Erronous code detected', ['script' => $code, 'code' => $exitCode]);
+            throw new \RuntimeException(sprintf('Script exit code was %s', $exitCode), $exitCode);
         }
     }
 
@@ -93,9 +93,11 @@ class SSHAccess implements InstanceAccessInterface {
 
     public function getPassword() {
         if(!($password = $this->get('password'))) {
+            $this->info('No ssh password found. Lets try with a private key (if it exits!) ...');
             $key = $this->get('key');
             $password = new \Crypt_RSA();
             $password->loadKey($key);
+            $this->credentials->set('password', $password);
         }
 
         return $password;
