@@ -11,9 +11,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $expectedHost = 'test.somewhere.com';
         $expectedMaxAttempts = 5;
 
-        $this->patchClassMethod('Net_SSH2::disconnect');
-
-        $this->patchClassMethod('Net_SSH2::Net_SSH2', function($host, $port, $timeout) use ($expectedHost, &$expectedMaxAttempts){
+        $this->patchClassMethod('App\Util\Net\SSH2::Net_SSH2', function($host, $port, $timeout) use ($expectedHost, &$expectedMaxAttempts){
             $this->assertEquals($expectedHost, $host);
             $this->assertEquals(22, $port);
 
@@ -23,7 +21,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
             }
         });
 
-        $this->patchClassMethod('Net_SSH2::login', function($user, $password) use ($self, &$expectedMaxAttempts){
+        $this->patchClassMethod('App\Util\Net\SSH2::login', function($user, $password) use ($self, &$expectedMaxAttempts){
             $this->assertEquals('root', $user);
             $this->assertEquals('test', $password);
             $this->assertEquals(1, $expectedMaxAttempts);
@@ -41,35 +39,35 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
     }
 
     public function testExec() {
-        $this->patchClassMethod('Net_SSH2::disconnect');
-        $this->patchClassMethod('Net_SSH2::Net_SSH2');
-        $this->patchClassMethod('Net_SSH2::login');
+        $this->patchClassMethod('App\Util\Net\SSH2::disconnect');
+        $this->patchClassMethod('App\Util\Net\SSH2::Net_SSH2');
+        $this->patchClassMethod('App\Util\Net\SSH2::login');
         $mockHost = 'test.somewhere.com';
         $constructorCalled = false;
-        $this->patchClassMethod('Net_SFTP::Net_SFTP', function($host, $port, $timeout) use (&$constructorCalled, $mockHost){
+        $this->patchClassMethod('App\Util\Net\SFTP::Net_SFTP', function($host, $port, $timeout) use (&$constructorCalled, $mockHost){
             $this->assertEquals($mockHost, $host);
             $this->assertEquals(22, $port);
             $constructorCalled = true;
         });
 
-        $this->patchClassMethod('Net_SFTP::login', function($user, $password) use (&$expectedMaxAttempts, &$constructorCalled){
+        $this->patchClassMethod('App\Util\Net\SFTP::login', function($user, $password) use (&$expectedMaxAttempts, &$constructorCalled){
             $this->assertTrue($constructorCalled);
             $this->assertEquals('root', $user);
             $this->assertEquals('test', $password);
         }, 1);
 
-        $this->patchClassMethod('Net_SFTP::put', function($remotePath, $code) {
+        $this->patchClassMethod('App\Util\Net\SFTP::put', function($remotePath, $code) {
             $this->assertEquals('/tmp/execute.sh', $remotePath);
             $this->assertEquals("#!/bin/bash\ndate", $code);
         }, 1);
 
-        $this->patchClassMethod('Net_SFTP::chmod', function($premissions, $remotePath) {
+        $this->patchClassMethod('App\Util\Net\SFTP::chmod', function($premissions, $remotePath) {
             $this->assertEquals('/tmp/execute.sh', $remotePath);
             $this->assertEquals(0550, $premissions);
         }, 1);
 
         $isLogged = false;
-        $this->patchClassMethod('Net_SSH2::exec', function($command, $cb) use (&$isLogged){
+        $this->patchClassMethod('App\Util\Net\SSH2::exec', function($command, $cb) use (&$isLogged){
             $this->assertEquals('/tmp/execute.sh', $command);
             $this->assertInstanceOf('Closure', $cb);
             $isLogged = true;
@@ -96,10 +94,9 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
     public function testConnectWithSSHKey() {
         $expectedHost = 'test.somewhere.com';
 
-        $this->patchClassMethod('Net_SSH2::disconnect');
-        $this->patchClassMethod('Net_SSH2::Net_SSH2');
+        $this->patchClassMethod('App\Util\Net\SSH2::Net_SSH2');
 
-        $this->patchClassMethod('Net_SSH2::login', function($user, $password) use (&$expectedMaxAttempts){
+        $this->patchClassMethod('App\Util\Net\SSH2::login', function($user, $password) use (&$expectedMaxAttempts){
             $this->assertEquals('root', $user);
             $this->assertInstanceof('Crypt_RSA', $password);
         }, 1);
@@ -121,19 +118,19 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
     public function testExecWithSSHKey() {
         $expectedHost = 'test.somewhere.com';
 
-        $this->patchClassMethod('Net_SSH2::disconnect');
-        $this->patchClassMethod('Net_SSH2::Net_SSH2');
-        $this->patchClassMethod('Net_SSH2::login');
-        $this->patchClassMethod('Net_SFTP::Net_SFTP');
-        $this->patchClassMethod('Net_SFTP::put');
-        $this->patchClassMethod('Net_SFTP::chmod');
-        $this->patchClassMethod('Net_SSH2::exec');
+        $this->patchClassMethod('App\Util\Net\SSH2::disconnect');
+        $this->patchClassMethod('App\Util\Net\SSH2::Net_SSH2');
+        $this->patchClassMethod('App\Util\Net\SSH2::login');
+        $this->patchClassMethod('App\Util\Net\SFTP::Net_SFTP');
+        $this->patchClassMethod('App\Util\Net\SFTP::put');
+        $this->patchClassMethod('App\Util\Net\SFTP::chmod');
+        $this->patchClassMethod('App\Util\Net\SSH2::exec');
 
         $this->patchClassMethod('Crypt_RSA::loadKey', function($key) {
             $this->assertEquals('--key--123456--key--', $key);
         }, 2);
 
-        $this->patchClassMethod('Net_SFTP::login', function($user, $password) {
+        $this->patchClassMethod('App\Util\Net\SFTP::login', function($user, $password) {
             $this->assertEquals('root', $user);
             $this->assertInstanceof('Crypt_RSA', $password);
         }, 1);

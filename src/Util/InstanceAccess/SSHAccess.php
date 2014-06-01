@@ -6,6 +6,8 @@ use Psr\Log\LoggerTrait;
 use Psr\Log\LoggerAwareTrait;
 use App\Platform\InstanceAccessInterface;
 use Symfony\Component\HttpFoundation\ParameterBag;
+use App\Util\Net\SFTP;
+use App\Util\Net\SSH2;
 
 class SSHAccess implements InstanceAccessInterface {
     use LoggerTrait, LoggerAwareTrait;
@@ -32,7 +34,7 @@ class SSHAccess implements InstanceAccessInterface {
             ++$attempts;
             try {
                 $this->info(sprintf('SSH connecting (attemtp %s)...', $attempts));
-                $conn = new \Net_SSH2($instanceHost, 22);
+                $conn = new SSH2($instanceHost, 22);
                 $conn->login($this->get('user'), $this->getPassword());
                 $this->conn = $conn;
                 $this->host = $instanceHost;
@@ -59,7 +61,7 @@ class SSHAccess implements InstanceAccessInterface {
         }
 
         $this->info('Connecting to the instance via SFTP ...');
-        $sftp = new \Net_SFTP($this->host, 22);
+        $sftp = new SFTP($this->host, 22);
         $sftp->login($this->get('user'), $this->getPassword());
 
         $this->info('Executing code ...');
