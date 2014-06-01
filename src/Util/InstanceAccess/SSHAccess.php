@@ -77,7 +77,7 @@ class SSHAccess implements InstanceAccessInterface {
 
         $exitCode = $this->conn->getExitStatus();
 
-        if($exitCode !== 0) {
+        if(!!$exitCode !== false) {
             $this->critical('Erronous code detected', ['script' => $code, 'code' => $exitCode]);
             throw new \RuntimeException(sprintf('Script exit code was %s', $exitCode), $exitCode);
         }

@@ -109,20 +109,21 @@ class Client implements ClientInterface {
             $config['UserData'] = base64_encode("#cloud-config\n" . $yamlDumper->dump($userDataConfig));
         }
 
+        $this->info($instanceAccess instanceOf InstanceAccess);
         if($instanceAccess instanceOf InstanceAccess) {
-            $this->notice('Using provided aws instance access as KeyName for launching instance(s) ...');
+            $this->info('Using provided aws instance access as KeyName for launching instance(s) ...');
             $keyName = $instanceAccess->getKeyName();
             if(!$instanceAccess->hasKey()) {
-                $this->notice('Provided aws instance access, does not have a key!');
+                $this->info('Provided aws instance access, does not have a key!');
                 $response = $ec2Client->deleteKeyPair(array(
                     'KeyName' => $keyName
                 ));
-                $this->notice(sprintf('Deleted \'%s\' key pair in aws', $keyName), ['response' => $response->toArray()]);
+                $this->info(sprintf('Deleted \'%s\' key pair in aws', $keyName), ['response' => $response->toArray()]);
 
                 $response = $ec2Client->createKeyPair(array(
                     'KeyName' => $keyName
                 ));
-                $this->notice(sprintf('Created new \'%s\' key pair in aws', $keyName), ['response' => $response->toArray()]);
+                $this->info(sprintf('Created new \'%s\' key pair in aws', $keyName), ['response' => $response->toArray()]);
                 $instanceAccess->setPrivateKey($response->getPath('KeyMaterial'));
             }
             $config['KeyName'] = $keyName;

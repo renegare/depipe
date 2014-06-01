@@ -42,7 +42,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $this->patchClassMethod('App\Util\Net\SSH2::disconnect');
         $this->patchClassMethod('App\Util\Net\SSH2::Net_SSH2');
         $this->patchClassMethod('App\Util\Net\SSH2::login');
-        $this->patchClassMethod('App\Util\Net\SSH2::getExitStatus', 0);
+        $this->patchClassMethod('App\Util\Net\SSH2::getExitStatus', false);
         $mockHost = 'test.somewhere.com';
         $constructorCalled = false;
         $this->patchClassMethod('App\Util\Net\SFTP::Net_SFTP', function($host, $port, $timeout) use (&$constructorCalled, $mockHost){
@@ -126,7 +126,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $this->patchClassMethod('App\Util\Net\SFTP::put');
         $this->patchClassMethod('App\Util\Net\SFTP::chmod');
         $this->patchClassMethod('App\Util\Net\SSH2::exec');
-        $this->patchClassMethod('App\Util\Net\SSH2::getExitStatus', 0);
+        $this->patchClassMethod('App\Util\Net\SSH2::getExitStatus', false);
 
         $this->patchClassMethod('Crypt_RSA::loadKey', function($key) {
             $this->assertEquals('--key--123456--key--', $key);
