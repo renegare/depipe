@@ -182,6 +182,8 @@ Help Needed
 > - Allow special @wait param in pipe config (wait for an event in a parallel pipeline - #maybeToAmbitious)
 - [ ] Documentation of usage (better examples)
 - [ ] Replace references to internal classes within depipe to shorthand key names / enum
+- [ ] get rid of "symfony/http-foundation" dep
+- [ ] update all deps to latest (if beneficial)
 
 #### Commands
 - [ ] kill - terminate instances
