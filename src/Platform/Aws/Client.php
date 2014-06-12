@@ -36,7 +36,7 @@ class Client implements ClientInterface {
     }
 
     public function convertToImage($imageId) {
-        $this->info(sprintf('Requesting describeImages of: %s', $imageId));
+        $this->debug(sprintf('Requesting describeImages of: %s', $imageId));
         $client = $this->getEc2Client();
         $imageNotReady = true;
         while($imageNotReady) {
@@ -205,7 +205,7 @@ class Client implements ClientInterface {
     }
 
     public function findImage($imageName) {
-        $this->info(sprintf('Requesting describeImages of: %s', $imageName));
+        $this->debug(sprintf('Requesting describeImages of: %s', $imageName));
         $client = $this->getEc2Client();
         $response = $client->describeImages([
             'Filters' => [

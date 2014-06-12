@@ -17,7 +17,7 @@ class BuildCommand extends \App\Command {
         try {
             $client = $this->getClient();
             $imageName = $this->get('image.name');
-            $this->info(sprintf('Checking first, if image %s already exists ...', $imageName));
+            $this->info(sprintf('Checking first, if image \'%s\' already exists ...', $imageName));
             $image = $client->findImage($imageName);
             $this->info(sprintf('Image \'%s\' has already been built.', $imageName));
         } catch(\Exception $e) {
