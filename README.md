@@ -62,10 +62,10 @@ Help Needed
 - [x] App\Platform\LoadBalancerInterface
 
 #### Aws Platform Concrete Classes
-- [ ] App\Platform\Aws\Client
-- [ ] App\Platform\Aws\Image
-- [ ] App\Platform\Aws\Instance
-- [ ] App\Platform\Aws\LoadBalancer
+- [x] App\Platform\Aws\Client
+- [x] App\Platform\Aws\Image
+- [x] App\Platform\Aws\Instance
+- [x] App\Platform\Aws\LoadBalancer
 
 #### Release
 - [ ] tag v0.1.0
