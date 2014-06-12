@@ -1,5 +1,9 @@
 {
     "name": "renegare/depipe",
+    "description": "deployment pipeline (currently only for aws)",
+    "keywords": ["cloud", "deployment", "renegare", "aws"],
+    "license": "MIT",
+    "authors": [{"name": "Mudi Ugbowanko", "email": "mudi@renegare.com"}],
     "autoload": {
         "psr-4": {
             "App\\": "src"
