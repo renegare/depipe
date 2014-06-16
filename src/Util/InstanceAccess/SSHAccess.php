@@ -65,8 +65,20 @@ class SSHAccess implements InstanceAccessInterface {
         }
 
         $this->info('Connecting to the instance via SFTP ...');
-        $sftp = new SFTP($this->host, 22);
-        $sftp->login($this->get('user'), $this->getPassword());
+        $attempts = 0;
+        $maxAttempts = $this->get('connect.attempts', 1);
+        $sleepSeconds = $this->get('connect.sleep');
+        while($attempts < $maxAttempts) {
+            ++$attempts;
+            try {
+                $sftp = new SFTP($this->host, 22);
+                $sftp->login($this->get('user'), $this->getPassword());
+            } catch (\Exception $e) {
+                $this->warning('SFTP connection error: ' . $e->getMessage());
+                $this->info(sprintf('Will try again in %s seconds ...', $sleepSeconds));
+                sleep($sleepSeconds);
+            }
+        }
 
         $this->info(sprintf('Executing code `%s ...', substr($code, 0, 100)));
         $sftp->put('/tmp/execute.sh', $code);
