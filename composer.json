@@ -24,5 +24,8 @@
         "phpunit/phpunit": "4.1.0",
         "satooshi/php-coveralls": "dev-master",
         "antecedent/patchwork": "1.2.7"
+    },
+    "scripts": {
+        "test": "phpunit"
     }
 }

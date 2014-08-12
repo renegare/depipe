@@ -15,6 +15,7 @@ class SSHAccess implements InstanceAccessInterface {
     protected $credentials;
     protected $conn;
     protected $host;
+    protected $sftp;
 
     public function __construct() {
         $this->credentials = new ParameterBag();
@@ -56,6 +57,38 @@ class SSHAccess implements InstanceAccessInterface {
         }
     }
 
+    public function getSFTPConnection($host, $password, $port = 22) {
+        if(!$this->sftp) {
+
+            $this->info('Connecting to the instance via SFTP ...');
+            $attempts = 0;
+            $maxAttempts = $this->get('connect.attempts', 1);
+            $sleepSeconds = $this->get('connect.sleep');
+
+            while($attempts < $maxAttempts) {
+                ++$attempts;
+                try {
+                    $sftp = new SFTP($this->host, 22);
+                    if(!($response = $sftp->login($this->get('user'), $this->getPassword()))) {
+                        throw new \RuntimeException('Failed SFTP Connection');
+                    }
+                    $this->sftp = $sftp;
+                    break;
+                } catch (\Exception $e) {
+                    $this->warning('SFTP connection error: ' . $e->getMessage());
+                    $this->info(sprintf('Will try again in %s seconds ...', $sleepSeconds));
+                    sleep($sleepSeconds);
+                }
+            }
+
+            if(!$this->sftp) {
+                throw new \RuntimeException(sprintf('Failed SFTP Connection after %s attempts', $maxAttempts));
+            }
+        }
+
+        return $this->sftp;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -64,33 +97,18 @@ class SSHAccess implements InstanceAccessInterface {
             throw new \Exception('You are not connected to the server!');
         }
 
-        $this->info('Connecting to the instance via SFTP ...');
-        $attempts = 0;
-        $maxAttempts = $this->get('connect.attempts', 1);
-        $sleepSeconds = $this->get('connect.sleep');
-        while($attempts < $maxAttempts) {
-            ++$attempts;
-            try {
-                $sftp = new SFTP($this->host, 22);
-                $sftp->login($this->get('user'), $this->getPassword());
-            } catch (\Exception $e) {
-                $this->warning('SFTP connection error: ' . $e->getMessage());
-                $this->info(sprintf('Will try again in %s seconds ...', $sleepSeconds));
-                sleep($sleepSeconds);
-            }
-        }
-
+        $sftp = $this->getSFTPConnection($this->host, $this->getPassword(), 22);
         $this->info(sprintf('Executing code `%s ...', substr($code, 0, 100)));
         $sftp->put('/tmp/execute.sh', $code);
         $sftp->chmod(0550, '/tmp/execute.sh');
-        $this->conn->exec('/tmp/execute.sh', function($output) {
+        $response = $this->conn->exec('/tmp/execute.sh', function($output) {
             $this->info(sprintf("[%s]:\n%s", $this->host, $output));
         });
 
         $exitCode = $this->conn->getExitStatus();
 
-        if(!!$exitCode !== false) {
-            $this->critical('Erronous code detected', ['script' => $code, 'code' => $exitCode]);
+        if($exitCode !== 0) {
+            $this->critical('Erronous code detected', ['message' => $this->conn->getLastError(), 'script' => $code, 'code' => $exitCode]);
             throw new \RuntimeException(sprintf('Script exit code was %s', $exitCode), $exitCode);
         }
     }

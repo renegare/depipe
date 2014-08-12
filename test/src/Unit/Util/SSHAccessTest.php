@@ -55,6 +55,7 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
             $this->assertTrue($constructorCalled);
             $this->assertEquals('root', $user);
             $this->assertEquals('test', $password);
+            return true;
         }, 1);
 
         $this->patchClassMethod('App\Util\Net\SFTP::put', function($remotePath, $code) {
@@ -75,6 +76,8 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
             $cb('test-output');
             $isLogged = false;
         }, 1);
+
+        $this->patchClassMethod('App\Util\Net\SSH2::getExitStatus', 0);
 
         $this->patchClassMethod('App\Util\InstanceAccess\SSHAccess::info', function($message) use ($mockHost, &$isLogged){
             if($isLogged) {
@@ -135,7 +138,10 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $this->patchClassMethod('App\Util\Net\SFTP::login', function($user, $password) {
             $this->assertEquals('root', $user);
             $this->assertInstanceof('Crypt_RSA', $password);
+            return true;
         }, 1);
+
+        $this->patchClassMethod('App\Util\Net\SSH2::getExitStatus', 0);
 
         $access = new SSHAccess();
         $access->setCredentials([
@@ -160,7 +166,6 @@ class SSHAccessTest extends \App\Test\Util\BaseTestCase {
         $this->patchClassMethod('App\Util\Net\SFTP::chmod');
         $this->patchClassMethod('App\Util\Net\SSH2::exec');
 
-        $this->patchClassMethod('App\Util\Net\SSH2::getExitStatus', 1, 1);
         $access = new SSHAccess();
 
         $access->connect('test.somewhere.com');
